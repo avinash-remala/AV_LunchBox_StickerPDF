@@ -73,9 +73,16 @@ def extract_table_data_from_image(image_path):
     phone_pattern = re.compile(r'\d{10}')
     
     for line in lines:
-        # Skip header and junk (but keep "Guru" as it's a valid name)
+        # Skip header and junk
         if 'OAN' in line or 'RWDN' in line:
             continue
+        
+        # Skip lines with too many repeated characters or all caps gibberish
+        if len(line) > 0:
+            # Count repeated characters
+            repeated_chars = sum(1 for i in range(len(line)-1) if line[i] == line[i+1])
+            if repeated_chars > len(line) / 3:  # More than 1/3 repeated chars = likely garbage
+                continue
         
         # Check if it's a phone number
         if phone_pattern.match(line):
@@ -86,16 +93,16 @@ def extract_table_data_from_image(image_path):
             box_types.append(line)
         
         # Check if it's rice type
-        elif 'Pulav Rice' in line or line == 'Rice':
+        elif 'Pulav Rice' in line or 'White Rice' in line or line == 'Rice':
             rice_types.append('Pulav Rice')
         
         # Otherwise, it might be a name (if it contains letters and is not too short)
         elif len(line) > 2 and any(c.isalpha() for c in line):
-            # Skip if it's address-related
-            if 'Plano' in line or 'Pkwy' in line or line in ['wy', 'v', '~', 'W', '2900', '3400']:
+            # Skip if it's address-related or rice-related
+            if 'Plano' in line or 'Pkwy' in line or line in ['wy', 'v', '~', 'W', '2900', '3400', 'Rice']:
                 continue
             # Filter out numbers and short strings
-            if not line.isdigit() and len(line) > 2:  # Changed from 3 to 2 to allow short names
+            if not line.isdigit() and len(line) > 2:
                 names.append(line)
     
     print(f"Found: {len(names)} names, {len(phones)} phones, {len(box_types)} box types, {len(rice_types)} rice types")
@@ -322,15 +329,43 @@ def convert_docx_to_pdf(docx_path, pdf_path):
 def update_template_with_data(template_path, output_path, data_rows):
     """
     Update the Word template by replacing cell contents with extracted data.
+    Handles pagination by adding new rows/pages as needed.
     Then convert to PDF.
     """
     from docx import Document
+    from docx.oxml import parse_xml
+    from copy import deepcopy
+    
     print(f"Loading template: {template_path}")
     doc = Document(template_path)
     table = doc.tables[0]
     data_columns = [0, 2, 4]
     offset_2px = Pt(2)
     data_index = 0
+    
+    # Get the number of available rows in the template
+    initial_row_count = len(table.rows)
+    print(f"Template has {initial_row_count} rows initially")
+    
+    # Calculate how many additional rows we need
+    rows_needed = len(data_rows)
+    if rows_needed > initial_row_count:
+        additional_rows_needed = rows_needed - initial_row_count
+        print(f"Need to add {additional_rows_needed} new rows for {len(data_rows)} data items")
+        
+        # Get a reference row to copy (usually the first data row)
+        if initial_row_count > 0:
+            reference_row = table.rows[0]
+            tbl = table._element
+            
+            # Add new rows by copying the reference row
+            for _ in range(additional_rows_needed):
+                # Deep copy the reference row
+                new_row = deepcopy(reference_row._element)
+                tbl.append(new_row)
+                print(f"Added new row (total now: {len(table.rows)})")
+    
+    # Now fill all rows with data
     for row_idx, row in enumerate(table.rows):
         for col_idx in data_columns:
             if data_index < len(data_rows):
@@ -351,6 +386,9 @@ def update_template_with_data(template_path, output_path, data_rows):
             else:
                 cell = row.cells[col_idx]
                 cell.text = ""
+    
+    print(f"Updated {data_index} data cells from {len(data_rows)} rows")
+    
     # Save as temporary DOCX first
     temp_docx = output_path.replace('.pdf', '_temp.docx')
     print(f"\nSaving temporary DOCX to: {temp_docx}")
