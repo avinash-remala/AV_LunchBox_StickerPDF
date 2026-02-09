@@ -36,21 +36,26 @@ def select_files_and_run():
     
     print(f"Selected image: {image_file}")
     
-    # Select template file
-    print("Selecting template file...")
-    template_file = filedialog.askopenfilename(
-        title="Select Word Template (AR_Template.docx)",
-        filetypes=[
-            ("Word documents", "*.docx"),
-            ("All files", "*.*")
-        ]
-    )
+    # Use template from Templates/AR_Template.docx
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    template_file = os.path.join(script_dir, "Templates", "AR_Template.docx")
     
-    if not template_file:
-        print("No template file selected. Exiting.")
-        return
+    # Check if template exists
+    if not os.path.exists(template_file):
+        print("Selecting template file...")
+        template_file = filedialog.askopenfilename(
+            title="Select Word Template (AR_Template.docx)",
+            filetypes=[
+                ("Word documents", "*.docx"),
+                ("All files", "*.*")
+            ]
+        )
+        
+        if not template_file:
+            print("No template file selected. Exiting.")
+            return
     
-    print(f"Selected template: {template_file}")
+    print(f"Using template: {template_file}")
     
     # Select output location
     print("Selecting output location...")

@@ -30,9 +30,10 @@ except ImportError:
 try:
     from docx import Document
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.shared import Pt
+    from docx.shared import Pt, RGBColor, Inches
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
+    from docx.enum.dml import MSO_THEME_COLOR
 except ImportError:
     print("Installing python-docx...")
     import subprocess
@@ -40,9 +41,10 @@ except ImportError:
                           "python-docx", "--break-system-packages"])
     from docx import Document
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.shared import Pt
+    from docx.shared import Pt, RGBColor, Inches
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
+    from docx.enum.dml import MSO_THEME_COLOR
 
 
 def extract_table_data_from_image(image_path):
@@ -370,18 +372,29 @@ def update_template_with_data(template_path, output_path, data_rows):
         for col_idx in data_columns:
             if data_index < len(data_rows):
                 data = data_rows[data_index]
-                cell_text = f"{data['name']}\n{data['address']}\n{data['box_type']} + {data['rice_type']}"
+                
+                # Change + to - in the display text
+                cell_text = f"{data['name']}\n{data['address']}\n{data['box_type']} - {data['rice_type']}"
+                
                 cell = row.cells[col_idx]
-                cell.text = cell_text
-                if col_idx == 4:
-                    set_cell_margins(cell, left=100)
-                for para in cell.paragraphs:
+                cell.text = ""  # Clear existing text
+                
+                # Add the three lines of text
+                for idx, line in enumerate(cell_text.split('\n')):
+                    if idx > 0:
+                        cell.add_paragraph()
+                    para = cell.paragraphs[idx]
+                    para.text = line
                     para.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     current_indent = para.paragraph_format.left_indent or Pt(0)
                     if col_idx == 2:
-                        para.paragraph_format.left_indent = current_indent + offset_2px
+                        para.paragraph_format.left_indent = current_indent + Pt(2)
                     elif col_idx == 4:
                         para.paragraph_format.left_indent = current_indent + Pt(9)
+                
+                if col_idx == 4:
+                    set_cell_margins(cell, left=100)
+                
                 data_index += 1
             else:
                 cell = row.cells[col_idx]
