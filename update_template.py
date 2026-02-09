@@ -3,8 +3,23 @@
 Update Word template with data extracted from image.
 Replaces existing cell contents in the template table.
 
-Usage:
-    python update_template.py <input_image> <template_docx> <output_docx>
+Usag                 # Pick the longest match (real names are longer than garbage like 'vy' or 'v')
+            if all_name_matches:
+                name = max(all_name_matches, key=len)
+            else:
+                name = ''
+            
+            # Remove leading single characters followed by space (residual garbage like "v Abhishek")
+            if name and ' ' in name:
+                parts = name.split()
+                if len(parts[0]) == 1 and len(parts) > 1:
+                    # Skip the single-letter garbage
+                    name = ' '.join(parts[1:])Check if it's a box type
+        box_match = box_pattern.search(line)
+        if box_match:
+            current_row['box_type'] = box_match.group(1)
+            print(f"→ Found box type: {current_row['box_type']}")
+            continueython update_template.py <input_image> <template_docx> <output_docx>
 
 Example:
     python update_template.py input.png template.docx output.docx
@@ -51,6 +66,12 @@ def extract_table_data_from_image(image_path):
     """
     Extract table data from image using OCR and image analysis.
     Returns list of dictionaries with keys: name, address, box_type, rice_type
+    
+    Strategy: The image has two sections:
+    1. Orders section (name + address) - appears first
+    2. Box/Rice section (box types + rice types) - appears later
+    
+    We extract each section separately, then match by index/position.
     """
     print(f"Loading image: {image_path}")
     img = Image.open(image_path)
@@ -59,131 +80,134 @@ def extract_table_data_from_image(image_path):
     print("Performing OCR on image...")
     text = pytesseract.image_to_string(img)
     
-    # Also get detailed OCR data to detect row positions
-    ocr_data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-    
     # Split into lines
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
-    # Extract separate lists for each column
-    names = []
-    phones = []
-    box_types = []
-    rice_types = []
+    print(f"OCR extracted {len(lines)} lines total")
+    if lines:
+        print("First 10 lines for debugging:")
+        for i, line in enumerate(lines[:10]):
+            print(f"  {i}: {line}")
     
     # Patterns
-    phone_pattern = re.compile(r'\d{10}')
+    phone_pattern = re.compile(r'\b\d{10}\b')
+    address_pattern = re.compile(r'(2900 Plano Pkwy|3400 W Plano Pkwy)')
+    box_pattern = re.compile(r'((?:Veg|Non-Veg)\s+Comfort Box|(?:\d+\s+)?(?:Comfort Box|Kabuli Chana Box|Moong Dal Box|Rajma Box))')
+    rice_pattern = re.compile(r'(Pulav Rice|White Rice)')
     
-    for line in lines:
+    # FIRST PASS: Extract orders (name + address)
+    orders = []
+    for idx, line in enumerate(lines):
         # Skip header and junk
-        if 'OAN' in line or 'RWDN' in line:
+        if any(skip in line for skip in ['OAN', 'RWDN', 'ORDER NO', 'DELIVERY', 'PHONE']):
             continue
         
-        # Skip lines with too many repeated characters or all caps gibberish
+        # Skip lines with too many repeated characters
         if len(line) > 0:
-            # Count repeated characters
             repeated_chars = sum(1 for i in range(len(line)-1) if line[i] == line[i+1])
-            if repeated_chars > len(line) / 3:  # More than 1/3 repeated chars = likely garbage
+            if repeated_chars > len(line) / 3:
                 continue
         
-        # Check if it's a phone number
-        if phone_pattern.match(line):
-            phones.append(line)
-        
-        # Check if it's a box type
-        elif 'Comfort Box' in line:
-            box_types.append(line)
-        
-        # Check if it's rice type
-        elif 'Pulav Rice' in line or 'White Rice' in line or line == 'Rice':
-            rice_types.append('Pulav Rice')
-        
-        # Otherwise, it might be a name (if it contains letters and is not too short)
-        elif len(line) > 2 and any(c.isalpha() for c in line):
-            # Skip if it's address-related or rice-related
-            if 'Plano' in line or 'Pkwy' in line or line in ['wy', 'v', '~', 'W', '2900', '3400', 'Rice']:
-                continue
-            # Filter out numbers and short strings
-            if not line.isdigit() and len(line) > 2:
-                names.append(line)
-    
-    print(f"Found: {len(names)} names, {len(phones)} phones, {len(box_types)} box types, {len(rice_types)} rice types")
-    
-    # Detect addresses by analyzing row background colors
-    # Yellow/Orange (RGB ~240,180,100) = 2900 Plano Pkwy
-    # Blue (RGB ~180,220,240) = 3400 W Plano Pkwy
-    addresses = []
-    
-    # Get image dimensions
-    width, height = img.size
-    
-    # First, find the approximate y-positions of name texts
-    name_positions = []
-    for i, text in enumerate(ocr_data['text']):
-        if text.strip() in names:
-            y = ocr_data['top'][i]
-            name_positions.append(y)
-    
-    # Remove duplicates and sort
-    name_positions = sorted(list(set(name_positions)))
-    
-    # Now sample the background color for each position
-    for y_pos in name_positions[:len(names)]:  # Match the number of names
-        # Sample a few pixels from the left side of the row
-        sample_x = 100  # Sample from the address column area
-        
-        # Make sure we're within bounds
-        if 0 <= sample_x < width and 0 <= y_pos < height:
-            # Sample a few pixels and average
-            colors = []
-            for offset in range(-5, 6, 2):
-                try:
-                    pixel = img.getpixel((sample_x, y_pos + offset))
-                    if isinstance(pixel, tuple) and len(pixel) >= 3:
-                        colors.append(pixel[:3])
-                except:
-                    pass
+        # Check if line contains address
+        address_match = address_pattern.search(line)
+        if address_match:
+            address = address_match.group(1)
+            line_remainder = line.replace(address, '').strip()
             
-            if colors:
-                # Average the colors
-                avg_r = sum(c[0] for c in colors) / len(colors)
-                avg_g = sum(c[1] for c in colors) / len(colors)
-                avg_b = sum(c[2] for c in colors) / len(colors)
-                
-                # Determine address based on color
-                # Blue backgrounds have higher blue values, lower red
-                # Yellow/Orange backgrounds have higher red values
-                if avg_b > avg_r and avg_b > 150:  # Bluish
-                    addresses.append('3400 W Plano Pkwy')
-                else:  # Yellowish/Orange
-                    addresses.append('2900 Plano Pkwy')
+            # Extract phone number first
+            phone_match = phone_pattern.search(line_remainder)
+            if phone_match:
+                line_remainder = line_remainder.replace(phone_match.group(), '').strip()
+            
+            # Extract NAME from what's left
+            cleaned = line_remainder
+            
+            # Remove leading garbage
+            while cleaned and not cleaned[0].isalpha():
+                cleaned = cleaned[1:].strip()
+            
+            # Remove garbage characters
+            garbage_patterns = ['»', '|', '¥', '«', '{', '}']
+            for pattern in garbage_patterns:
+                cleaned = cleaned.replace(pattern, ' ')
+            
+            cleaned = cleaned.lstrip('_- ~').rstrip('_- ~{')
+            cleaned = ' '.join(cleaned.split())
+            
+            # Extract name sequences
+            import re as regex_module
+            all_name_matches = regex_module.findall(r'[A-Za-z]+(?:\s+[A-Za-z]+)*', cleaned)
+            
+            if all_name_matches:
+                name = max(all_name_matches, key=len)
             else:
-                # Default if sampling failed
-                addresses.append('2900 Plano Pkwy')
-        else:
-            addresses.append('2900 Plano Pkwy')
+                name = ''
+            
+            # Clean up common OCR artifacts in names
+            # Remove leading garbage patterns like "vy", "v", "a", etc. (single/double letter junk)
+            if name:
+                parts = name.split()
+                # Remove leading single or double-letter garbage words
+                while parts and len(parts[0]) <= 2 and parts[0].lower() in ['v', 'vy', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'w', 'x', 'y', 'z', 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag', 'ah', 'ai', 'aj', 'ak', 'al', 'am', 'an', 'ao', 'ap', 'aq', 'ar', 'as', 'at', 'au', 'av', 'aw', 'ax', 'ay', 'az']:
+                    parts.pop(0)
+                name = ' '.join(parts)
+            
+            # Handle concatenated names (like "SaiCharanKurella" -> "Sai Charan Kurella")
+            # Split on capital letters if the name has no spaces and looks like multiple words
+            if name and ' ' not in name and len(name) > 4:
+                # Check if it looks like concatenated words (multiple capital letters)
+                capital_positions = [i for i, c in enumerate(name) if c.isupper()]
+                if len(capital_positions) >= 2:
+                    # Split the name at capital letter positions
+                    split_name = []
+                    for i, pos in enumerate(capital_positions):
+                        start = pos
+                        end = capital_positions[i + 1] if i + 1 < len(capital_positions) else len(name)
+                        split_name.append(name[start:end])
+                    name = ' '.join(split_name)
+            
+            # Remove leading single letters followed by space (residual garbage)
+            if name and ' ' in name:
+                parts = name.split()
+                if len(parts[0]) == 1 and len(parts) > 1:
+                    name = ' '.join(parts[1:])
+            
+            # Only add if we have a real name
+            if name and len(name) > 3:
+                orders.append({'name': name, 'address': address})
     
-    # Ensure we have the right number of addresses
-    while len(addresses) < len(names):
-        addresses.append('2900 Plano Pkwy')
-    addresses = addresses[:len(names)]
+    # SECOND PASS: Extract all box types and rice types (they appear later in the document)
+    box_types = []
+    rice_types = []
+    for line in lines:
+        box_match = box_pattern.search(line)
+        if box_match:
+            box_type = box_match.group(1)
+            box_types.append(box_type)
+        
+        rice_match = rice_pattern.search(line)
+        if rice_match:
+            rice_type = rice_match.group(1)
+            rice_types.append(rice_type)
     
-    print(f"Detected {len(addresses)} addresses based on row colors")
+    print(f"\nExtracted: {len(orders)} orders, {len(box_types)} box types, {len(rice_types)} rice types")
     
-    # Combine into rows
-    num_rows = max(len(names), len(phones), len(box_types), len(rice_types))
-    
+    # COMBINE: Match by index position
+    # The assumption is that box_types[i] and rice_types[i] correspond to orders[i]
+    num_rows = max(len(orders), len(box_types), len(rice_types))
     data_rows = []
+    
     for i in range(num_rows):
         row_data = {
-            'name': names[i] if i < len(names) else '',
-            'address': addresses[i] if i < len(addresses) else '',
+            'name': orders[i]['name'] if i < len(orders) else '',
+            'address': orders[i]['address'] if i < len(orders) else '',
             'box_type': box_types[i] if i < len(box_types) else '',
             'rice_type': rice_types[i] if i < len(rice_types) else ''
         }
         data_rows.append(row_data)
+        print(f"Row {i+1}: {row_data}")
     
-    print(f"Extracted {len(data_rows)} rows from image")
+    print(f"\nExtracted {len(data_rows)} complete rows from image")
     return data_rows
 
 
