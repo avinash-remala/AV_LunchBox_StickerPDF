@@ -5,6 +5,7 @@ python-docx>=0.8.11          # Word document handling
 requests>=2.25.0             # HTTP requests for Google Sheets
 Pillow>=9.0.0               # Image processing
 pytesseract>=0.3.10         # OCR text extraction
+docx2pdf>=1.4               # PDF conversion (Windows fallback)
 
 # Optional system dependencies (install separately):
 # macOS:  brew install libreoffice tesseract

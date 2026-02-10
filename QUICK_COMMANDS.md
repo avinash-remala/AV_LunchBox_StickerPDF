@@ -13,7 +13,7 @@ python3 src/generate_pdf.py templates/AR_Template.docx \
 **What happens:**
 1. Connects to the Google Sheet
 2. Extracts today's lunch box orders
-3. Generates a PDF in `output/YYYY-MM-DD/` folder
+3. Generates a PDF in `exports/YYYY-MM-DD/` folder
 4. Uses timestamp for filename (e.g., `2026-02-09_10:12 PM.pdf`)
 
 ---
@@ -61,14 +61,14 @@ python3 src/pdf_generator_gui.py
 
 ### Google Sheets Output
 ```
-output/2026-02-09/2026-02-09_10:12 PM.pdf
-output/2026-02-09/2026-02-09_02:45 PM.pdf
-output/2026-02-09/2026-02-09_03:30 PM.pdf
+exports/2026-02-09/2026-02-09_10:12 PM.pdf
+exports/2026-02-09/2026-02-09_02:45 PM.pdf
+exports/2026-02-09/2026-02-09_03:30 PM.pdf
 ```
 
 ### Image Output
 ```
-output/2026-02-09/
+exports/2026-02-09/
   2026-02-09_10:12 PM.pdf
 ```
 
@@ -143,7 +143,7 @@ python3 src/generate_pdf.py templates/AR_Template.docx \
 → Processing order 1: John Smith
 → Processing order 2: Jane Doe
 → Creating PDF...
-✓ PDF saved to: output/2026-02-09/2026-02-09_10:30 PM.pdf
+✓ PDF saved to: exports/2026-02-09/2026-02-09_10:30 PM.pdf
 ```
 
 ---
@@ -162,7 +162,7 @@ python3 src/generate_pdf.py templates/AR_Template.docx \
 → Processing order 1: Alex Kumar
 → Processing order 2: Sarah Johnson
 → Creating PDF...
-✓ PDF saved to: output/2026-02-09/2026-02-09_10:30 PM.pdf
+✓ PDF saved to: exports/2026-02-09/2026-02-09_10:30 PM.pdf
 ```
 
 ---
@@ -222,7 +222,7 @@ python3 src/generate_pdf.py templates/AR_Template.docx \
   --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 
 # Step 3: Check output folder
-open output/
+open exports/
 ```
 
 ---
@@ -268,12 +268,12 @@ python3 src/generate_pdf.py templates/AR_Template.docx --image ~/Desktop/image.p
 
 ## 🔗 Related Documentation
 
-- See [`GETTING_STARTED.md`](docs/GETTING_STARTED.md) for detailed setup
-- See [`SHEETS_SETUP.md`](docs/SHEETS_SETUP.md) for Google Sheets configuration
-- See [`TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) for common issues
-- See [`REFACTORING_SUMMARY.md`](REFACTORING_SUMMARY.md) for file naming changes
+- See [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) for detailed setup
+- See [`docs/SHEETS_SETUP.md`](docs/SHEETS_SETUP.md) for Google Sheets configuration
+- See [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) for common issues
+- See [`docs/REFACTORING_SUMMARY.md`](docs/REFACTORING_SUMMARY.md) for file naming changes
 
 ---
 
-**Last Updated**: February 9, 2026  
+**Last Updated**: February 10, 2026  
 **Version**: 2.0 (Post-Refactoring)

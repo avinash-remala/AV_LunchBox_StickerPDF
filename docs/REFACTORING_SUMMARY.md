@@ -11,7 +11,7 @@ This document outlines the comprehensive professional refactoring of the AV Lunc
 | Old Name | New Name | Reason |
 |----------|----------|--------|
 | `Templates/` | `templates/` | Lowercase for consistency with other directories |
-| `exports/` | `output/` | More standard naming convention |
+| `output/` | `exports/` | More descriptive naming convention |
 | `outputs/` | (removed) | Consolidated with build/ folder |
 
 #### New Folder Structure
@@ -22,7 +22,7 @@ project/
 ├── docs/                # Main documentation
 │   └── archive/         # Legacy/reference documentation
 ├── templates/           # Word document templates
-├── output/              # Generated PDF outputs
+├── exports/             # Generated PDF outputs
 ├── build/               # PyInstaller build artifacts
 └── README.md            # Main readme
 ```
@@ -86,7 +86,7 @@ The following legacy/reference files were moved to `archive/`:
 #### README.md
 - ✅ Updated Project Structure section with new folder names
 - ✅ Updated all Usage section commands with new file names
-- ✅ Updated Output paths from `exports/` to `output/`
+- ✅ Updated Output paths from `output/` to `exports/`
 - ✅ Updated Documentation references to new file names
 - ✅ Updated Development section with new script names
 - ✅ Updated System Requirements references
@@ -95,7 +95,7 @@ The following legacy/reference files were moved to `archive/`:
 All documentation files updated with:
 - ✅ New file names in commands and examples
 - ✅ New paths (e.g., `Templates/` → `templates/`)
-- ✅ New output paths (e.g., `exports/` → `output/`)
+- ✅ New output paths (e.g., `output/` → `exports/`)
 - ✅ References to renamed scripts
 - ✅ Project structure diagrams
 
@@ -119,7 +119,7 @@ All documentation files updated with:
 
 ### 📦 Better Organization
 - Core functionality clearly separated in `src/`
-- Generated files organized in `output/` by date
+- Generated files organized in `exports/` by date
 - Legacy documentation archived but accessible
 - Templates logically grouped
 
@@ -155,7 +155,7 @@ If you're using this project:
 **Generate from Google Sheets:**
 ```bash
 # Before
-python3 src/update_template.py Templates/AR_Template.docx --google-sheet SHEET_ID
+python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet SHEET_ID
 
 # After
 python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet SHEET_ID
@@ -164,7 +164,7 @@ python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet SHEET_ID
 **Generate from Image:**
 ```bash
 # Before
-python3 src/update_template.py Templates/AR_Template.docx --image image.png
+python3 src/generate_pdf.py templates/AR_Template.docx --image image.png
 
 # After
 python3 src/generate_pdf.py templates/AR_Template.docx --image image.png
@@ -185,7 +185,7 @@ python3 src/pdf_generator_gui.py
 exports/2026-02-09/2026-02-09_10:12 PM.pdf
 
 # After
-output/2026-02-09/2026-02-09_10:12 PM.pdf
+exports/2026-02-09/2026-02-09_10:12 PM.pdf
 ```
 
 ---
@@ -207,7 +207,7 @@ After refactoring, verify:
 1. ✅ CLI version works with Google Sheets
 2. ✅ CLI version works with image OCR
 3. ✅ GUI version launches and functions correctly
-4. ✅ Output files are created in new `output/` folder
+4. ✅ Output files are created in new `exports/` folder
 5. ✅ Test scripts run without import errors
 6. ✅ Documentation links work correctly
 

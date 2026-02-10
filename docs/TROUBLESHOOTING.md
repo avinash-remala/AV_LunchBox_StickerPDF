@@ -6,7 +6,7 @@
 When you run the script, it prints detailed debug information:
 
 ```bash
-python3 generate_pdf.py templates/AR_Template.docx --image your_image.png
+python3 generate_pdf.py your_image.png templates/AR_Template.docx output.pdf
 ```
 
 Look for lines like:
@@ -177,7 +177,7 @@ ls -la templates/
 brew install libreoffice
 
 # Then re-run the script
-python3 generate_pdf.py templates/AR_Template.docx --image your_image.png
+python3 generate_pdf.py your_image.png templates/AR_Template.docx output.pdf
 ```
 
 The DOCX file will still be created, which you can manually convert to PDF using:

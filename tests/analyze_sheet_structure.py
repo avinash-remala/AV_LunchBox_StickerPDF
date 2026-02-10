@@ -3,6 +3,12 @@
 Diagnostic script to see the exact structure of today's row in Google Sheet
 """
 
+import sys
+from pathlib import Path
+
+# Add src directory to path so we can import modules
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
 from google_sheets_handler import get_sheet_data_from_csv_export
 from datetime import datetime
 

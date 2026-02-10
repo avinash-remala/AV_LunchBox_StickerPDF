@@ -19,7 +19,7 @@ Your lunch box PDF generator now has full Google Sheets integration! Here's what
 ### 3. **Testing & Debugging Scripts**
    - `test_sheets.py` - Verify Google Sheets connection
    - `debug_dates.py` - Check available dates in the sheet
-   - `setup.sh` - Convenient bash wrapper
+   - `quickstart.sh` - Convenient bash wrapper
 
 ### 4. **Documentation**
    - `GOOGLE_SHEETS_GUIDE.md` - Complete usage guide
@@ -32,7 +32,7 @@ Your lunch box PDF generator now has full Google Sheets integration! Here's what
 python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
-### Using the Setup Script
+### Using the Quick Start Script
 ```bash
 ./setup.sh                    # Generate from Google Sheets
 ./setup.sh test               # Test connection
@@ -122,7 +122,7 @@ Automatically generates markers based on box/rice combinations:
 | `test_sheets.py` | Test script to verify setup |
 | `debug_dates.py` | Debug script to check available dates |
 | `setup.sh` | Bash wrapper for easy execution |
-| `SHEETS_SETUP.md` | Detailed user guide |
+| `GOOGLE_SHEETS_GUIDE.md` | Detailed user guide |
 
 ## 🐛 Troubleshooting
 

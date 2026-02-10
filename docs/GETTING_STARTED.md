@@ -74,7 +74,7 @@ python debug_dates.py
 
 ```bash
 # Easy way (recommended)
-./setup.sh
+./quickstart.sh
 
 # Direct way
 python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
@@ -84,7 +84,7 @@ python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nH
 
 ```bash
 # Easy way
-./setup.sh image photo.png
+./quickstart.sh image photo.png
 
 # Direct way
 python generate_pdf.py templates/AR_Template.docx --image photo.png
@@ -259,7 +259,7 @@ python generate_pdf.py templates/AR_Template.docx --google-sheet SHEET_ID
 
 **A**: In the workspace directory with timestamp:
 ```
-output/2026-02-09/2026-02-09_09:50 PM.pdf
+2026-02-09_09:50 PM.pdf
 ```
 
 ### Q: Can I use a different template?
@@ -323,10 +323,11 @@ python generate_pdf.py MyTemplate.docx --google-sheet SHEET_ID
 ├── requirements.txt                # Python dependencies
 ├── templates/
 │   └── AR_Template.docx            # Word template
-├── SHEETS_SETUP.md                 # Setup guide
-├── SHEETS_API_REFERENCE.md         # Technical details
-├── DATA_EXTRACTION_METHODS.md      # Method comparison
-└── TROUBLESHOOTING.md              # Troubleshooting guide
+├── GOOGLE_SHEETS_GUIDE.md          # User guide
+├── GOOGLE_SHEETS_INTEGRATION.md    # Technical details
+├── SHEETS_VS_OCR.md                # Method comparison
+├── TROUBLESHOOTING.md              # Troubleshooting guide
+└── INDEX.md                        # This file
 ```
 
 ---

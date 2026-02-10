@@ -74,13 +74,13 @@ def select_files_and_run():
     
     # Get the directory where this script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    main_script = os.path.join(script_dir, "generate_pdf.py")
+    main_script = os.path.join(script_dir, "update_template.py")
     
     # Check if main script exists
     if not os.path.exists(main_script):
         messagebox.showerror(
             "Error",
-            f"Cannot find generate_pdf.py\n\nLooked in: {script_dir}\n\nPlease make sure both scripts are in the same folder."
+            f"Cannot find update_template.py\n\nLooked in: {script_dir}\n\nPlease make sure both scripts are in the same folder."
         )
         return
     
