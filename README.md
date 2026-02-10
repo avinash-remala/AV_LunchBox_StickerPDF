@@ -7,37 +7,33 @@ A Python application to automatically extract lunch box order data from a Google
 ```
 .
 ├── src/                          # Main source code
-│   ├── update_template.py        # Main script to generate PDFs
-│   ├── update_template_gui.py    # GUI version for Windows
-│   ├── sheets_handler.py         # Google Sheets data extraction
-│   ├── flexible_sheets_handler.py# Alternative extraction handler
+│   ├── generate_pdf.py           # Main PDF generation script
+│   ├── summary_generator.py      # Summary report generation ⭐ NEW
+│   ├── google_sheets_handler.py  # Google Sheets data extraction
+│   ├── sheets_extractor.py       # Flexible sheets handler
+│   ├── pdf_generator_gui.py      # GUI version for Mac
 │   ├── requirements.txt          # Python dependencies
-│   └── quickstart.sh             # Quick start script
+│   └── setup.sh                  # Setup script
 │
 ├── tests/                         # Test and debug scripts
 │   ├── test_sheets.py            # Test Google Sheets integration
 │   ├── test_extraction.py        # Test data extraction
 │   ├── debug_*.py                # Debug utilities
-│   ├── analyze_sheet_structure.py# Sheet analysis tools
-│   └── advanced_diagnostic.py    # Advanced diagnostics
+│   └── analyze_sheet_structure.py# Sheet analysis tools
 │
 ├── docs/                          # Documentation
-│   ├── README_COMPLETE.md        # Complete documentation
-│   ├── GOOGLE_SHEETS_INTEGRATION.md
-│   ├── GOOGLE_SHEETS_GUIDE.md
-│   ├── INDEX.md
-│   ├── SHEETS_VS_OCR.md
-│   ├── TROUBLESHOOTING.md
-│   ├── SETUP_COMPLETE.txt
+│   ├── SUMMARY_GENERATOR.md      # Summary feature guide ⭐ NEW
+│   ├── GETTING_STARTED.md        # Getting started guide
+│   ├── SHEETS_API_REFERENCE.md   # Sheets API reference
+│   ├── TROUBLESHOOTING.md        # Troubleshooting guide
 │   └── *.md                      # Additional documentation
 │
-├── exports/                       # Generated PDF files
-│   └── *.pdf                     # Output PDFs
+├── exports/                       # Generated files
+│   └── YYYY-MM-DD/
+│       ├── *.pdf                 # Generated PDF files
+│       └── *.txt                 # Summary reports ⭐ NEW
 │
-├── outputs/                       # Build outputs
-│   └── update_template_gui.spec  # PyInstaller spec file
-│
-├── Templates/                     # Word templates
+├── templates/                     # Word templates
 │   └── AR_Template.docx          # Lunch box order template
 │
 └── README.md                      # This file
@@ -64,35 +60,51 @@ A Python application to automatically extract lunch box order data from a Google
 
 **Generate PDF from Google Sheets:**
 ```bash
-python3 src/update_template.py Templates/AR_Template.docx \
-  --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python3 src/generate_pdf.py --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
+
+This will:
+- ✓ Extract order data from Google Sheets
+- ✓ Generate formatted PDF from template
+- ✓ **Create summary report (NEW)** ⭐
+- ✓ Save all files to `exports/YYYY-MM-DD/` with timestamp
 
 **Generate PDF from Image (OCR):**
 ```bash
-python3 src/update_template.py Templates/AR_Template.docx \
-  --image path/to/image.png
+python3 src/generate_pdf.py --image path/to/image.png
 ```
 
-#### Option 2: GUI Version (Windows Recommended)
+#### Option 2: GUI Version (Mac)
 
 **Run the GUI application:**
 ```bash
-python3 src/update_template_gui.py
+python3 src/pdf_generator_gui.py
 ```
 
 The GUI provides an easy-to-use interface to:
 - Select your Word template
-- Choose between Google Sheets or Image (OCR) input
-- Enter your spreadsheet ID or image file path
+- Choose image file (OCR extraction)
 - Generate PDFs with a single click
+- **Automatic summary generation** ⭐
 
 **Output Location:**
 The PDF will be saved in `exports/YYYY-MM-DD/` folder with the format: `YYYY-MM-DD_HH:MM AM/PM.pdf`
 
-**Example output path:** `exports/2026-02-09/2026-02-09_10:12 PM.pdf`
+**Summary Report (NEW):** A text file with the same timestamp is automatically created alongside the PDF containing:
+- Total box count
+- Breakdown by box type (Veg/Non-Veg + Rice Type combinations)
+- Distribution by delivery address
+
+**Example output:**
+```
+exports/2026-02-10/
+├── 2026-02-10_11:15 AM.pdf     # Generated sticker PDF
+└── 2026-02-10_11:15 AM.txt     # Summary report ⭐ NEW
+```
 
 The date folder is automatically created if it doesn't exist.
+
+For more details on the summary feature, see [SUMMARY_GENERATOR.md](docs/SUMMARY_GENERATOR.md).
 
 ## Features
 
@@ -120,6 +132,30 @@ Extracts the following information from Google Sheets:
   - `--- NVW ---` for Non-Veg Comfort Box + White Rice
   - `--- NVP ---` for Non-Veg Comfort Box + Pulav Rice
 - **Cross-Platform PDF Conversion**: Uses LibreOffice, docx2pdf, or unoconv
+
+### Summary Generation ⭐ NEW
+- **Automatic Reports**: Creates summary text file alongside every PDF
+- **Order Statistics**: Total box count and breakdown by type
+- **Address Distribution**: Shows boxes per delivery address
+- **Same Naming**: Summary uses same timestamp as PDF for easy matching
+- **Same Location**: Saves to same `exports/YYYY-MM-DD/` folder
+
+Example summary report:
+```
+TOTAL BOXES: 17
+
+Boxes (count by type)
+•	Veg Comfort Box + Pulav Rice: 11
+•	Non-Veg Comfort Box + Pulav Rice: 6
+•	Veg Comfort Box + White Rice: 0
+•	Non-Veg Comfort Box + White Rice: 0
+
+Addresses (total boxes per address)
+•	2900 Plano Pkwy: 12 boxes
+•	3400 W Plano Pkwy: 5 boxes
+```
+
+See [SUMMARY_GENERATOR.md](docs/SUMMARY_GENERATOR.md) for detailed documentation.
 
 ## Testing
 

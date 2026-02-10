@@ -613,6 +613,18 @@ def main():
     
     # Update template and convert to PDF
     update_template_with_data(template_path, output_path, data_rows)
+    
+    # Generate and save summary with the same timestamp and location
+    try:
+        from summary_generator import save_summary
+        summary_filename = f"{date_time}.txt"
+        summary_path = save_summary(data_rows, str(output_dir), summary_filename)
+        if summary_path:
+            print(f"✓ Summary generated successfully")
+    except ImportError:
+        print("Warning: summary_generator module not found - skipping summary generation")
+    except Exception as e:
+        print(f"Warning: Error generating summary: {e}")
 
 
 if __name__ == "__main__":

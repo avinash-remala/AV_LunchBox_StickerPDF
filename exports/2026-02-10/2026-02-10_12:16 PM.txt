@@ -1,0 +1,11 @@
+TOTAL BOXES: 18
+
+Boxes (count by type)
+•	Veg Comfort Box + Pulav Rice: 12
+•	Non-Veg Comfort Box + Pulav Rice: 6
+•	Veg Comfort Box + White Rice: 0
+•	Non-Veg Comfort Box + White Rice: 0
+
+Addresses (total boxes per address)
+•	2900 Plano Pkwy: 13 boxes
+•	3400 W Plano Pkwy: 5 boxes

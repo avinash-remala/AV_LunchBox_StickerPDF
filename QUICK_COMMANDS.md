@@ -6,15 +6,20 @@
 
 **Generate PDFs from Google Sheets:**
 ```bash
-python3 src/generate_pdf.py templates/AR_Template.docx \
-  --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python3 src/generate_pdf.py --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
 **What happens:**
 1. Connects to the Google Sheet
 2. Extracts today's lunch box orders
-3. Generates a PDF in `exports/YYYY-MM-DD/` folder
-4. Uses timestamp for filename (e.g., `2026-02-09_10:12 PM.pdf`)
+3. **✨ Generates a PDF in `exports/YYYY-MM-DD/` folder**
+4. **✨ NEW: Automatically generates SUMMARY text file alongside PDF**
+5. Uses timestamp for filename (e.g., `2026-02-09_10:12 PM.pdf` + `2026-02-09_10:12 PM.txt`)
+
+**Summary file contains:**
+- Total box count
+- Breakdown by box type (Veg/Non-Veg + Rice Type)
+- Distribution by address
 
 ---
 
@@ -22,21 +27,22 @@ python3 src/generate_pdf.py templates/AR_Template.docx \
 
 **Generate PDFs from image (OCR):**
 ```bash
-python3 src/generate_pdf.py templates/AR_Template.docx \
-  --image /path/to/image.png
+python3 src/generate_pdf.py --image /path/to/image.png
 ```
 
 **Examples:**
 ```bash
 # Current directory
-python3 src/generate_pdf.py templates/AR_Template.docx --image screenshot.png
+python3 src/generate_pdf.py --image screenshot.png
 
 # Specific path
-python3 src/generate_pdf.py templates/AR_Template.docx --image ~/Pictures/orders.png
+python3 src/generate_pdf.py --image ~/Pictures/orders.png
 
 # Desktop
-python3 src/generate_pdf.py templates/AR_Template.docx --image ~/Desktop/lunch_orders.png
+python3 src/generate_pdf.py --image ~/Desktop/lunch_orders.png
 ```
+
+**Note:** Summary generation works with images too (same directory, same timestamp)
 
 ---
 
@@ -59,17 +65,36 @@ python3 src/pdf_generator_gui.py
 
 ## 📍 Output Locations
 
-### Google Sheets Output
+### Google Sheets Output (with Summary ✨)
 ```
-exports/2026-02-09/2026-02-09_10:12 PM.pdf
-exports/2026-02-09/2026-02-09_02:45 PM.pdf
-exports/2026-02-09/2026-02-09_03:30 PM.pdf
+exports/2026-02-09/
+  ├── 2026-02-09_10:12 PM.pdf       # Sticker PDF
+  ├── 2026-02-09_10:12 PM.txt       # Summary report ✨ NEW
+  ├── 2026-02-09_02:45 PM.pdf
+  ├── 2026-02-09_02:45 PM.txt       # Summary report ✨ NEW
+  └── 2026-02-09_03:30 PM.pdf
 ```
 
 ### Image Output
 ```
-exports/2026-02-09/
-  2026-02-09_10:12 PM.pdf
+exports/
+  ├── 2026-02-09_10:12 PM.pdf
+  └── 2026-02-09_10:12 PM.txt       # Summary report ✨ NEW
+```
+
+### Sample Summary File
+```
+TOTAL BOXES: 17
+
+Boxes (count by type)
+•	Veg Comfort Box + Pulav Rice: 11
+•	Non-Veg Comfort Box + Pulav Rice: 6
+•	Veg Comfort Box + White Rice: 0
+•	Non-Veg Comfort Box + White Rice: 0
+
+Addresses (total boxes per address)
+•	2900 Plano Pkwy: 12 boxes
+•	3400 W Plano Pkwy: 5 boxes
 ```
 
 ---
@@ -132,8 +157,7 @@ python3 tests/analyze_sheet_structure.py
 ### Example 1: Generate PDF from Google Sheets (Full Path)
 ```bash
 cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
-python3 src/generate_pdf.py templates/AR_Template.docx \
-  --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python3 src/generate_pdf.py --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
 **Expected Output:**
@@ -144,7 +168,16 @@ python3 src/generate_pdf.py templates/AR_Template.docx \
 → Processing order 2: Jane Doe
 → Creating PDF...
 ✓ PDF saved to: exports/2026-02-09/2026-02-09_10:30 PM.pdf
+✓ Summary generated successfully
+✓ Summary saved to: exports/2026-02-09/2026-02-09_10:30 PM.txt
 ```
+
+### Example 2: Test Summary Generation
+```bash
+python3 tests/test_summary_generation.py
+```
+
+This generates sample data with 17 orders and creates a summary file to verify the feature works correctly.
 
 ---
 
