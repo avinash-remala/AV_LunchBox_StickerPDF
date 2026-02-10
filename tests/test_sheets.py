@@ -3,7 +3,7 @@
 Test script to verify Google Sheets integration
 """
 
-from sheets_handler import get_todays_lunch_orders
+from google_sheets_handler import get_todays_lunch_orders
 from datetime import datetime
 
 SPREADSHEET_ID = "1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI"

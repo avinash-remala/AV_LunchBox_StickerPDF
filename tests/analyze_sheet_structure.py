@@ -3,7 +3,7 @@
 Diagnostic script to see the exact structure of today's row in Google Sheet
 """
 
-from sheets_handler import get_sheet_data_from_csv_export
+from google_sheets_handler import get_sheet_data_from_csv_export
 from datetime import datetime
 
 SPREADSHEET_ID = "1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI"

@@ -4,13 +4,13 @@
 
 Your lunch box PDF generator now has full Google Sheets integration! Here's what was added:
 
-### 1. **New Module: `sheets_handler.py`**
+### 1. **New Module: `google_sheets_handler.py`**
    - Fetches data from public Google Sheets using CSV export
    - Automatically finds today's date (handles both `2/9/2026` and `02/09/2026` formats)
    - Extracts customer names, addresses, box types, and rice types
    - Supports multiple orders per day
 
-### 2. **Enhanced `update_template.py`**
+### 2. **Enhanced `generate_pdf.py`**
    - New command-line argument: `--google-sheet <spreadsheet_id>`
    - Maintains backward compatibility with image OCR (`--image <path>`)
    - Smart date/time formatting in output filenames
@@ -19,7 +19,7 @@ Your lunch box PDF generator now has full Google Sheets integration! Here's what
 ### 3. **Testing & Debugging Scripts**
    - `test_sheets.py` - Verify Google Sheets connection
    - `debug_dates.py` - Check available dates in the sheet
-   - `quickstart.sh` - Convenient bash wrapper
+   - `setup.sh` - Convenient bash wrapper
 
 ### 4. **Documentation**
    - `GOOGLE_SHEETS_GUIDE.md` - Complete usage guide
@@ -29,15 +29,15 @@ Your lunch box PDF generator now has full Google Sheets integration! Here's what
 
 ### Basic Usage
 ```bash
-python update_template.py Templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
-### Using the Quick Start Script
+### Using the Setup Script
 ```bash
-./quickstart.sh                    # Generate from Google Sheets
-./quickstart.sh test               # Test connection
-./quickstart.sh dates              # Check available dates
-./quickstart.sh image input.png    # Generate from image (legacy)
+./setup.sh                    # Generate from Google Sheets
+./setup.sh test               # Test connection
+./setup.sh dates              # Check available dates
+./setup.sh image input.png    # Generate from image (legacy)
 ```
 
 ## 📊 Google Sheet Structure
@@ -117,17 +117,17 @@ Automatically generates markers based on box/rice combinations:
 
 | File | Purpose |
 |------|---------|
-| `update_template.py` | Main script - handles both Google Sheets and image input |
-| `sheets_handler.py` | Google Sheets data fetching module |
+| `generate_pdf.py` | Main script - handles both Google Sheets and image input |
+| `google_sheets_handler.py` | Google Sheets data fetching module |
 | `test_sheets.py` | Test script to verify setup |
 | `debug_dates.py` | Debug script to check available dates |
-| `quickstart.sh` | Bash wrapper for easy execution |
-| `GOOGLE_SHEETS_GUIDE.md` | Detailed user guide |
+| `setup.sh` | Bash wrapper for easy execution |
+| `SHEETS_SETUP.md` | Detailed user guide |
 
 ## 🐛 Troubleshooting
 
 ### "No orders found for today"
-→ Run `./quickstart.sh dates` to see available dates in the sheet
+→ Run `./setup.sh dates` to see available dates in the sheet
 
 ### "Google Sheet is not accessible"
 → Ensure the sheet is publicly shared or use image input instead

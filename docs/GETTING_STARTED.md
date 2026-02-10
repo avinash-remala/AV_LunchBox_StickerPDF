@@ -74,20 +74,20 @@ python debug_dates.py
 
 ```bash
 # Easy way (recommended)
-./quickstart.sh
+./setup.sh
 
 # Direct way
-python update_template.py Templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
 ### Generate PDF from Image
 
 ```bash
 # Easy way
-./quickstart.sh image photo.png
+./setup.sh image photo.png
 
 # Direct way
-python update_template.py Templates/AR_Template.docx --image photo.png
+python generate_pdf.py templates/AR_Template.docx --image photo.png
 ```
 
 ### Test & Debug
@@ -233,7 +233,7 @@ Update Template
 
 Or directly:
 ```bash
-python update_template.py Templates/AR_Template.docx --google-sheet SHEET_ID
+python generate_pdf.py templates/AR_Template.docx --google-sheet SHEET_ID
 ```
 
 ### Q: What if today's date isn't in the sheet?
@@ -259,14 +259,14 @@ python update_template.py Templates/AR_Template.docx --google-sheet SHEET_ID
 
 **A**: In the workspace directory with timestamp:
 ```
-2026-02-09_09:50 PM.pdf
+output/2026-02-09/2026-02-09_09:50 PM.pdf
 ```
 
 ### Q: Can I use a different template?
 
 **A**: Yes! Use any DOCX file:
 ```bash
-python update_template.py MyTemplate.docx --google-sheet SHEET_ID
+python generate_pdf.py MyTemplate.docx --google-sheet SHEET_ID
 ```
 
 ### Q: How do I update the data?
@@ -315,19 +315,18 @@ python update_template.py MyTemplate.docx --google-sheet SHEET_ID
 
 ```
 .
-├── update_template.py              # Main script
-├── sheets_handler.py               # Google Sheets module
+├── generate_pdf.py                 # Main script
+├── google_sheets_handler.py        # Google Sheets module
 ├── test_sheets.py                  # Test script
 ├── debug_dates.py                  # Debug script
-├── quickstart.sh                   # Quick start script
+├── setup.sh                        # Setup script
 ├── requirements.txt                # Python dependencies
-├── Templates/
+├── templates/
 │   └── AR_Template.docx            # Word template
-├── GOOGLE_SHEETS_GUIDE.md          # User guide
-├── GOOGLE_SHEETS_INTEGRATION.md    # Technical details
-├── SHEETS_VS_OCR.md                # Method comparison
-├── TROUBLESHOOTING.md              # Troubleshooting guide
-└── INDEX.md                        # This file
+├── SHEETS_SETUP.md                 # Setup guide
+├── SHEETS_API_REFERENCE.md         # Technical details
+├── DATA_EXTRACTION_METHODS.md      # Method comparison
+└── TROUBLESHOOTING.md              # Troubleshooting guide
 ```
 
 ---

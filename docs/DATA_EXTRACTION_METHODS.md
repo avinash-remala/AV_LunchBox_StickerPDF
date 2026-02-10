@@ -168,16 +168,16 @@ Generate PDF
 
 ### Generate from Google Sheets
 ```bash
-./quickstart.sh
+./setup.sh
 # or
-python update_template.py Templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
 ### Generate from Image
 ```bash
-./quickstart.sh image photo.png
+./setup.sh image photo.png
 # or
-python update_template.py Templates/AR_Template.docx --image photo.png
+python generate_pdf.py templates/AR_Template.docx --image photo.png
 ```
 
 ### Switch Back and Forth

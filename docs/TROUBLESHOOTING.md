@@ -6,7 +6,7 @@
 When you run the script, it prints detailed debug information:
 
 ```bash
-python3 update_template.py your_image.png Templates/AR_Template.docx output.pdf
+python3 generate_pdf.py templates/AR_Template.docx --image your_image.png
 ```
 
 Look for lines like:
@@ -84,7 +84,7 @@ If your images use different names (like "Basmati" or "Brown Rice"), the pattern
 
 **How to fix in code:**
 ```python
-# Find this line in update_template.py (around line 78):
+# Find this line in generate_pdf.py (around line 78):
 address_pattern = re.compile(r'(2900 Plano Pkwy|3400 W Plano Pkwy)')
 
 # Change it to include your address pattern:
@@ -155,13 +155,13 @@ if current_row['address'] == extracted_address:
 
 **Cause**: Path to template is incorrect
 **Solution**:
-1. Make sure `Templates/AR_Template.docx` exists in your project folder
-2. Check spelling: it should be `Templates` (with capital T)
+1. Make sure `templates/AR_Template.docx` exists in your project folder
+2. Check spelling: it should be `templates` (lowercase)
 3. Verify the file is named `AR_Template.docx` (exact case)
 
 **How to check:**
 ```bash
-ls -la Templates/
+ls -la templates/
 # Should show: AR_Template.docx
 ```
 
@@ -177,7 +177,7 @@ ls -la Templates/
 brew install libreoffice
 
 # Then re-run the script
-python3 update_template.py your_image.png Templates/AR_Template.docx output.pdf
+python3 generate_pdf.py templates/AR_Template.docx --image your_image.png
 ```
 
 The DOCX file will still be created, which you can manually convert to PDF using:

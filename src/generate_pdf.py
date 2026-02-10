@@ -570,7 +570,7 @@ def main():
     if spreadsheet_id:
         print(f"\nReading data from Google Sheet: {spreadsheet_id}")
         try:
-            from sheets_handler import get_todays_lunch_orders
+            from google_sheets_handler import get_todays_lunch_orders
             data_rows = get_todays_lunch_orders(spreadsheet_id)
         except ImportError:
             print("Error: sheets_handler module not found")
@@ -599,11 +599,11 @@ def main():
     
     # Determine output directory based on data source
     if spreadsheet_id:
-        # For Google Sheets: save to exports/YYYY-MM-DD/
-        output_dir = Path("exports") / date_folder
+        # For Google Sheets: save to output/YYYY-MM-DD/
+        output_dir = Path("output") / date_folder
     else:
-        # For image: save to exports/ (legacy behavior)
-        output_dir = Path("exports")
+        # For image: save to output/ (legacy behavior)
+        output_dir = Path("output")
     
     # Create directory if it doesn't exist
     output_dir.mkdir(parents=True, exist_ok=True)

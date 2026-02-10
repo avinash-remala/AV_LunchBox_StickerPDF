@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `update_template.py` script now supports reading lunch order data directly from a Google Sheet. This eliminates the need to use OCR on images and allows for direct data input into the system.
+The `generate_pdf.py` script now supports reading lunch order data directly from a Google Sheet. This eliminates the need to use OCR on images and allows for direct data input into the system.
 
 ## Setup
 
@@ -30,7 +30,7 @@ Your Google Sheet should have the following columns:
 ### Method 1: Using Google Sheets (Recommended)
 
 ```bash
-python update_template.py Templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+python generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
 **What it does:**
@@ -43,7 +43,7 @@ python update_template.py Templates/AR_Template.docx --google-sheet 1442BcVZmlIU
 ### Method 2: Using Image OCR (Legacy)
 
 ```bash
-python update_template.py Templates/AR_Template.docx --image input.png
+python generate_pdf.py templates/AR_Template.docx --image input.png
 ```
 
 **What it does:**
@@ -161,11 +161,11 @@ If your sheet has multiple entries for the same date, the script will:
 
 ```
 .
-├── update_template.py          # Main script
-├── sheets_handler.py           # Google Sheets integration
+├── generate_pdf.py             # Main script
+├── google_sheets_handler.py    # Google Sheets integration
 ├── test_sheets.py              # Test script
 ├── debug_dates.py              # Debug script
-└── Templates/
+└── templates/
     └── AR_Template.docx        # Word template
 ```
 
@@ -186,7 +186,7 @@ Fetches all lunch orders for today from a Google Sheet.
 
 **Example:**
 ```python
-from sheets_handler import get_todays_lunch_orders
+from google_sheets_handler import get_todays_lunch_orders
 
 orders = get_todays_lunch_orders("1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI")
 for order in orders:

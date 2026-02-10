@@ -2,17 +2,19 @@
 
 A Python application to automatically extract lunch box order data from a Google Sheet and generate formatted PDFs from a Word template.
 
+> **Note**: This project has been professionally refactored with improved naming conventions and organization. See [`REFACTORING_SUMMARY.md`](REFACTORING_SUMMARY.md) for details on naming changes.
+
 ## Project Structure
 
 ```
 .
 ├── src/                          # Main source code
-│   ├── update_template.py        # Main script to generate PDFs
-│   ├── update_template_gui.py    # GUI version for Windows
-│   ├── sheets_handler.py         # Google Sheets data extraction
-│   ├── flexible_sheets_handler.py# Alternative extraction handler
+│   ├── generate_pdf.py           # Main script to generate PDFs
+│   ├── pdf_generator_gui.py      # GUI version for Windows/Mac
+│   ├── google_sheets_handler.py  # Google Sheets data extraction
+│   ├── sheets_extractor.py       # Alternative extraction handler
 │   ├── requirements.txt          # Python dependencies
-│   └── quickstart.sh             # Quick start script
+│   └── setup.sh                  # Setup script
 │
 ├── tests/                         # Test and debug scripts
 │   ├── test_sheets.py            # Test Google Sheets integration
@@ -22,23 +24,21 @@ A Python application to automatically extract lunch box order data from a Google
 │   └── advanced_diagnostic.py    # Advanced diagnostics
 │
 ├── docs/                          # Documentation
-│   ├── README_COMPLETE.md        # Complete documentation
-│   ├── GOOGLE_SHEETS_INTEGRATION.md
-│   ├── GOOGLE_SHEETS_GUIDE.md
-│   ├── INDEX.md
-│   ├── SHEETS_VS_OCR.md
-│   ├── TROUBLESHOOTING.md
-│   ├── SETUP_COMPLETE.txt
-│   └── *.md                      # Additional documentation
+│   ├── GETTING_STARTED.md        # Getting started guide
+│   ├── SHEETS_SETUP.md           # Google Sheets setup guide
+│   ├── SHEETS_API_REFERENCE.md   # API reference
+│   ├── DATA_EXTRACTION_METHODS.md# Data extraction methods
+│   ├── TROUBLESHOOTING.md        # Troubleshooting guide
+│   └── archive/                  # Legacy documentation
 │
-├── exports/                       # Generated PDF files
-│   └── *.pdf                     # Output PDFs
+├── output/                        # Generated PDF files
+│   └── YYYY-MM-DD/               # Date-organized outputs
 │
-├── outputs/                       # Build outputs
-│   └── update_template_gui.spec  # PyInstaller spec file
-│
-├── Templates/                     # Word templates
+├── templates/                     # Word templates
 │   └── AR_Template.docx          # Lunch box order template
+│
+├── build/                         # Build outputs (PyInstaller)
+│   └── update_template_gui/       # Compiled GUI executable
 │
 └── README.md                      # This file
 ```
@@ -60,25 +60,39 @@ A Python application to automatically extract lunch box order data from a Google
 
 ### Usage
 
-#### Generate PDF from Google Sheets
+#### Option 1: Command-Line Version (Mac/Linux/Windows)
 
+**Generate PDF from Google Sheets:**
 ```bash
-python3 src/update_template.py Templates/AR_Template.docx \
+python3 src/generate_pdf.py templates/AR_Template.docx \
   --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
-The PDF will be saved in `exports/YYYY-MM-DD/` folder with the format: `YYYY-MM-DD_HH:MM AM/PM.pdf`
-
-**Example output path:** `exports/2026-02-09/2026-02-09_10:12 PM.pdf`
-
-The date folder is automatically created if it doesn't exist.
-
-#### Generate PDF from Image (OCR)
-
+**Generate PDF from Image (OCR):**
 ```bash
-python3 src/update_template.py src/../Templates/AR_Template.docx \
+python3 src/generate_pdf.py templates/AR_Template.docx \
   --image path/to/image.png
 ```
+
+#### Option 2: GUI Version (Windows Recommended)
+
+**Run the GUI application:**
+```bash
+python3 src/pdf_generator_gui.py
+```
+
+The GUI provides an easy-to-use interface to:
+- Select your Word template
+- Choose between Google Sheets or Image (OCR) input
+- Enter your spreadsheet ID or image file path
+- Generate PDFs with a single click
+
+**Output Location:**
+The PDF will be saved in `output/YYYY-MM-DD/` folder with the format: `YYYY-MM-DD_HH:MM AM/PM.pdf`
+
+**Example output path:** `output/2026-02-09/2026-02-09_10:12 PM.pdf`
+
+The date folder is automatically created if it doesn't exist.
 
 ## Features
 
@@ -165,7 +179,7 @@ pip install docx2pdf
 
 ## Troubleshooting
 
-- **"sheets_handler module not found"**: Ensure you're running the script from the correct directory or adjust the import path
+- **"google_sheets_handler module not found"**: Ensure you're running the script from the correct directory or adjust the import path
 - **"requests module not found"**: Run `pip install requests`
 - **PDF conversion fails**: Install LibreOffice or docx2pdf (see System Requirements)
 - **Google Sheet not found**: Verify the Spreadsheet ID and that the sheet is publicly accessible
@@ -176,42 +190,59 @@ For detailed troubleshooting, see `docs/TROUBLESHOOTING.md`
 ## Documentation
 
 For detailed documentation, see the `docs/` folder:
-- `README_COMPLETE.md` - Complete implementation details
-- `GOOGLE_SHEETS_INTEGRATION.md` - Google Sheets setup guide
-- `GOOGLE_SHEETS_GUIDE.md` - Data extraction guide
-- `SHEETS_VS_OCR.md` - Comparison of Google Sheets vs OCR methods
-- `INDEX.md` - Documentation index
+- `GETTING_STARTED.md` - Getting started guide
+- `SHEETS_SETUP.md` - Google Sheets setup guide
+- `SHEETS_API_REFERENCE.md` - API reference documentation
+- `DATA_EXTRACTION_METHODS.md` - Comparison of data extraction methods
 - `TROUBLESHOOTING.md` - Common issues and solutions
+- `archive/` - Legacy documentation
 
 ## Development
 
 ### Running from Source
 
+**Command-Line Version (Google Sheets):**
 ```bash
 # Navigate to project root
-cd /Users/avinashremala/Desktop/"PDF Creation From Image - Lunch Boxes"
+cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
 
-# Run main script
-python3 src/update_template.py Templates/AR_Template.docx \
+# Run main script with Google Sheets
+python3 src/generate_pdf.py templates/AR_Template.docx \
   --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
 ```
 
+**Command-Line Version (Image/OCR):**
+```bash
+python3 src/generate_pdf.py templates/AR_Template.docx \
+  --image path/to/image.png
+```
+
+**GUI Version:**
+```bash
+# Run the GUI application
+python3 src/pdf_generator_gui.py
+```
+
 ### Building GUI Executable (Windows)
+
+To create a standalone Windows executable from the GUI:
 
 ```bash
 cd src
 pyinstaller update_template_gui.spec
 ```
 
+The compiled executable will be available in the `dist/` folder and can be run without Python installed.
+
 ## Output
 
 Generated PDFs are saved in organized folders:
-- **Google Sheets exports:** `exports/YYYY-MM-DD/YYYY-MM-DD_HH:MM AM/PM.pdf`
-- **Image exports:** `exports/YYYY-MM-DD_HH:MM AM/PM.pdf`
+- **Google Sheets exports:** `output/YYYY-MM-DD/YYYY-MM-DD_HH:MM AM/PM.pdf`
+- **Image exports:** `output/YYYY-MM-DD/YYYY-MM-DD_HH:MM AM/PM.pdf`
 
 Date folders are automatically created when needed.
 
-**Example:** `exports/2026-02-09/2026-02-09_10:12 PM.pdf`
+**Example:** `output/2026-02-09/2026-02-09_10:12 PM.pdf`
 
 ## License
 
