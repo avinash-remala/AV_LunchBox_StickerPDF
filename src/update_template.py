@@ -517,36 +517,99 @@ def update_template_with_data(template_path, output_path, data_rows):
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python update_template.py <input_image> <template.docx>")
-        print("\nExample:")
-        print("  python update_template.py input.png template.docx")
-        print("\nThe PDF will be saved with today's date and time (e.g., 2026-02-09_03:45 PM.pdf)")
+    if len(sys.argv) < 2:
+        print("Usage: python update_template.py <template.docx> [--google-sheet <spreadsheet_id>] [--image <input_image>]")
+        print("\nExamples:")
+        print("  # Read from Google Sheet (today's date):")
+        print("  python update_template.py template.docx --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI")
+        print("\n  # Read from image (OCR):")
+        print("  python update_template.py template.docx --image input.png")
+        print("\nThe PDF will be saved with today's date and time (e.g., 2026-02-09_03-45-PM.pdf)")
         sys.exit(1)
     
-    image_path = sys.argv[1]
-    template_path = sys.argv[2]
+    template_path = sys.argv[1]
     
-    # Generate output filename with today's date and time (e.g., 2026-02-09_03:45 PM.pdf)
-    now = datetime.now()
-    date_time = now.strftime("%Y-%m-%d_%I:%M %p")
-    output_path = f"{date_time}.pdf"
+    # Parse arguments
+    use_google_sheets = '--google-sheet' in sys.argv
+    use_image = '--image' in sys.argv
+    
+    image_path = None
+    spreadsheet_id = None
+    
+    if use_google_sheets:
+        # Format: python script.py template.docx --google-sheet <id>
+        try:
+            sheet_idx = sys.argv.index('--google-sheet')
+            spreadsheet_id = sys.argv[sheet_idx + 1]
+        except (ValueError, IndexError):
+            print("Error: --google-sheet requires a spreadsheet ID")
+            sys.exit(1)
+    elif use_image:
+        # Format: python script.py template.docx --image input.png
+        try:
+            img_idx = sys.argv.index('--image')
+            image_path = sys.argv[img_idx + 1]
+        except (ValueError, IndexError):
+            print("Error: --image requires an image path")
+            sys.exit(1)
+    else:
+        # Legacy format: python script.py input.png template.docx (detect by file extension)
+        if len(sys.argv) >= 3 and Path(sys.argv[1]).suffix.lower() in ['.png', '.jpg', '.jpeg', '.bmp']:
+            image_path = sys.argv[1]
+            template_path = sys.argv[2]
+        else:
+            print("Error: Please provide either --google-sheet <id> or --image <path>")
+            sys.exit(1)
     
     # Check if files exist
-    if not Path(image_path).exists():
-        print(f"Error: Image file not found: {image_path}")
-        sys.exit(1)
-    
     if not Path(template_path).exists():
         print(f"Error: Template file not found: {template_path}")
         sys.exit(1)
     
-    # Extract data from image
-    data_rows = extract_table_data_from_image(image_path)
+    # Extract data based on source
+    if spreadsheet_id:
+        print(f"\nReading data from Google Sheet: {spreadsheet_id}")
+        try:
+            from sheets_handler import get_todays_lunch_orders
+            data_rows = get_todays_lunch_orders(spreadsheet_id)
+        except ImportError:
+            print("Error: sheets_handler module not found")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error reading from Google Sheet: {e}")
+            sys.exit(1)
+    elif image_path:
+        if not Path(image_path).exists():
+            print(f"Error: Image file not found: {image_path}")
+            sys.exit(1)
+        print(f"\nExtracting data from image: {image_path}")
+        data_rows = extract_table_data_from_image(image_path)
+    else:
+        print("Error: Please provide either --google-sheet <id> or --image <path>")
+        sys.exit(1)
     
     if not data_rows:
-        print("Warning: No data extracted from image!")
+        print("Warning: No data extracted!")
         sys.exit(1)
+    
+    # Generate output path with proper folder structure
+    now = datetime.now()
+    date_folder = now.strftime("%Y-%m-%d")
+    date_time = now.strftime("%Y-%m-%d_%I:%M %p")
+    
+    # Determine output directory based on data source
+    if spreadsheet_id:
+        # For Google Sheets: save to exports/YYYY-MM-DD/
+        output_dir = Path("exports") / date_folder
+    else:
+        # For image: save to exports/ (legacy behavior)
+        output_dir = Path("exports")
+    
+    # Create directory if it doesn't exist
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = str(output_dir / f"{date_time}.pdf")
+    
+    print(f"Output will be saved to: {output_path}")
     
     # Update template and convert to PDF
     update_template_with_data(template_path, output_path, data_rows)
