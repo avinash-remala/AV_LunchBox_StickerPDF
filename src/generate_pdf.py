@@ -516,6 +516,67 @@ def update_template_with_data(template_path, output_path, data_rows):
     print(f"Successfully updated {len(data_rows)} cells and saved as PDF!")
 
 
+def cleanup_exports_folder(exports_dir="exports", keep_current_date=True):
+    """
+    Clean up the exports folder by deleting all files and folders.
+    
+    Args:
+        exports_dir: The directory to clean (default: exports)
+        keep_current_date: If True, keep only today's folder (optional)
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        exports_path = Path(exports_dir)
+        
+        if not exports_path.exists():
+            print(f"Exports folder doesn't exist yet: {exports_dir}")
+            return True
+        
+        # Get list of items to delete
+        items_to_delete = list(exports_path.iterdir())
+        
+        if not items_to_delete:
+            print(f"Exports folder is already empty: {exports_dir}")
+            return True
+        
+        print(f"\n{'='*60}")
+        print(f"Cleaning up exports folder: {exports_dir}")
+        print(f"{'='*60}")
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        deleted_count = 0
+        
+        for item in items_to_delete:
+            # Skip today's folder if keep_current_date is True
+            if keep_current_date and item.is_dir() and item.name == today:
+                print(f"✓ Keeping current date folder: {item.name}")
+                continue
+            
+            try:
+                if item.is_file():
+                    item.unlink()
+                    print(f"✓ Deleted file: {item.name}")
+                    deleted_count += 1
+                elif item.is_dir():
+                    import shutil
+                    shutil.rmtree(item)
+                    print(f"✓ Deleted folder: {item.name}/")
+                    deleted_count += 1
+            except Exception as e:
+                print(f"✗ Failed to delete {item.name}: {e}")
+                return False
+        
+        print(f"\n✓ Cleanup complete! Deleted {deleted_count} item(s)")
+        print(f"{'='*60}\n")
+        return True
+        
+    except Exception as e:
+        print(f"✗ Error during cleanup: {e}")
+        return False
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python update_template.py <template.docx> [--google-sheet <spreadsheet_id>] [--image <input_image>]")
@@ -569,6 +630,10 @@ def main():
     # Extract data based on source
     if spreadsheet_id:
         print(f"\nReading data from Google Sheet: {spreadsheet_id}")
+        
+        # Clean up exports folder before processing Google Sheets data
+        cleanup_exports_folder("exports", keep_current_date=False)
+        
         try:
             from google_sheets_handler import get_todays_lunch_orders
             data_rows = get_todays_lunch_orders(spreadsheet_id)
@@ -610,6 +675,9 @@ def main():
     output_path = str(output_dir / f"{date_time}.pdf")
     
     print(f"Output will be saved to: {output_path}")
+    
+    # Cleanup exports folder (optional)
+    cleanup_exports_folder("exports", keep_current_date=True)
     
     # Update template and convert to PDF
     update_template_with_data(template_path, output_path, data_rows)

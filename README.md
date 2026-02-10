@@ -1,146 +1,209 @@
-# PDF Generation from Lunch Box Google Sheets
+# 🍱 AV Lunch Box Sticker PDF Generator
 
-A Python application to automatically extract lunch box order data from a Google Sheet and generate formatted PDFs from a Word template.
+Generate professional lunch box order PDFs and summaries from Google Sheets or images using OCR.
 
-## Project Structure
+**Version:** 2.0.0 | **Status:** ✅ Production Ready
 
-```
-.
-├── src/                          # Main source code
-│   ├── generate_pdf.py           # Main PDF generation script
-│   ├── summary_generator.py      # Summary report generation ⭐ NEW
-│   ├── google_sheets_handler.py  # Google Sheets data extraction
-│   ├── sheets_extractor.py       # Flexible sheets handler
-│   ├── pdf_generator_gui.py      # GUI version for Mac
-│   ├── requirements.txt          # Python dependencies
-│   └── setup.sh                  # Setup script
-│
-├── tests/                         # Test and debug scripts
-│   ├── test_sheets.py            # Test Google Sheets integration
-│   ├── test_extraction.py        # Test data extraction
-│   ├── debug_*.py                # Debug utilities
-│   └── analyze_sheet_structure.py# Sheet analysis tools
-│
-├── docs/                          # Documentation
-│   ├── SUMMARY_GENERATOR.md      # Summary feature guide ⭐ NEW
-│   ├── GETTING_STARTED.md        # Getting started guide
-│   ├── SHEETS_API_REFERENCE.md   # Sheets API reference
-│   ├── TROUBLESHOOTING.md        # Troubleshooting guide
-│   └── *.md                      # Additional documentation
-│
-├── exports/                       # Generated files
-│   └── YYYY-MM-DD/
-│       ├── *.pdf                 # Generated PDF files
-│       └── *.txt                 # Summary reports ⭐ NEW
-│
-├── templates/                     # Word templates
-│   └── AR_Template.docx          # Lunch box order template
-│
-└── README.md                      # This file
-```
+---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Installation
-
-1. **Install Python dependencies:**
-   ```bash
-   cd src
-   pip install -r requirements.txt
-   pip install requests
-   ```
-
-2. **Verify Google Sheet access:**
-   - Ensure your Google Sheet is publicly accessible or you have sharing permissions
-   - Get your Spreadsheet ID from the URL: `docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/...`
+```bash
+cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
+pip install -e .
+```
 
 ### Usage
 
-#### Option 1: Command-Line Version (Mac/Linux/Windows)
-
-**Generate PDF from Google Sheets:**
+**Using CLI:**
 ```bash
-python3 src/generate_pdf.py --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+# Generate from Google Sheets
+python -m av_lunchbox_stickerpdf.cli sheets SPREADSHEET_ID
+
+# Generate from image
+python -m av_lunchbox_stickerpdf.cli image image.png
 ```
 
-This will:
-- ✓ Extract order data from Google Sheets
-- ✓ Generate formatted PDF from template
-- ✓ **Create summary report (NEW)** ⭐
-- ✓ Save all files to `exports/YYYY-MM-DD/` with timestamp
+**Using Python:**
+```python
+from av_lunchbox_stickerpdf.cli import CLI
 
-**Generate PDF from Image (OCR):**
-```bash
-python3 src/generate_pdf.py --image path/to/image.png
+cli = CLI()
+cli.generate_from_sheets("spreadsheet-id")
 ```
 
-#### Option 2: GUI Version (Mac)
+---
 
-**Run the GUI application:**
-```bash
-python3 src/pdf_generator_gui.py
+## 📁 Project Structure
+
+```
+AV_LunchBox_StickerPDF/
+│
+├── av_lunchbox_stickerpdf/          ⭐ Main Package (PRODUCTION)
+│   ├── core/                        Core business logic
+│   ├── data/                        Data extraction
+│   ├── report/                      Report generation
+│   ├── cli/                         Command-line interface
+│   ├── config/                      Configuration
+│   ├── utils/                       Utilities
+│   └── gui/                         GUI (placeholder)
+│
+├── src/                             Original scripts (reference)
+│   ├── generate_pdf.py
+│   ├── google_sheets_handler.py
+│   ├── summary_generator.py
+│   ├── requirements.txt
+│   └── setup.sh
+│
+├── docs/                            📚 Documentation (organized)
+│   ├── guides/                      Usage guides
+│   │   ├── GETTING_STARTED_NEW.md  Start here!
+│   │   ├── PROJECT_STRUCTURE.md    Architecture
+│   │   ├── DOCUMENTATION_INDEX.md  Navigation
+│   │   └── QUICK_COMMANDS.md       Common tasks
+│   ├── archived/                    Reference docs
+│   │   ├── RESTRUCTURING_SUMMARY.md
+│   │   ├── RESTRUCTURING_CHECKLIST.md
+│   │   └── (other docs)
+│   ├── GETTING_STARTED.md          Original guide
+│   ├── SHEETS_API_REFERENCE.md     API docs
+│   └── TROUBLESHOOTING.md          Common issues
+│
+├── templates/                       Word templates
+│   └── AR_Template.docx
+│
+├── exports/                         Generated files
+│   └── YYYY-MM-DD/
+│       ├── *.pdf
+│       └── *.txt (summaries)
+│
+├── tests/                           Test suite
+│   └── *.py
+│
+├── setup.py                         Package installation
+├── README.md                        This file
+└── .gitignore
+
 ```
 
-The GUI provides an easy-to-use interface to:
-- Select your Word template
-- Choose image file (OCR extraction)
-- Generate PDFs with a single click
-- **Automatic summary generation** ⭐
+---
 
-**Output Location:**
-The PDF will be saved in `exports/YYYY-MM-DD/` folder with the format: `YYYY-MM-DD_HH:MM AM/PM.pdf`
+## 📖 Documentation
 
-**Summary Report (NEW):** A text file with the same timestamp is automatically created alongside the PDF containing:
-- Total box count
-- Breakdown by box type (Veg/Non-Veg + Rice Type combinations)
-- Distribution by delivery address
+### For New Users
+Start here: [`docs/guides/GETTING_STARTED_NEW.md`](docs/guides/GETTING_STARTED_NEW.md)
 
-**Example output:**
+### For Developers
+- **Architecture:** [`docs/guides/PROJECT_STRUCTURE.md`](docs/guides/PROJECT_STRUCTURE.md)
+- **API Reference:** [`docs/SHEETS_API_REFERENCE.md`](docs/SHEETS_API_REFERENCE.md)
+- **Navigation:** [`docs/guides/DOCUMENTATION_INDEX.md`](docs/guides/DOCUMENTATION_INDEX.md)
+
+### For Quick Reference
+- **Commands:** [`docs/guides/QUICK_COMMANDS.md`](docs/guides/QUICK_COMMANDS.md)
+- **Troubleshooting:** [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+
+### Archive (Reference)
+Detailed implementation docs in [`docs/archived/`](docs/archived/)
+
+---
+
+## ✨ Features
+
+✅ **PDF Generation** - Create professional sticker PDFs from templates  
+✅ **Google Sheets Integration** - Fetch order data automatically  
+✅ **OCR Support** - Extract data from images  
+✅ **Summary Reports** - Generate text summaries of orders  
+✅ **Auto Cleanup** - Clean exports folder before new runs  
+✅ **Cross-platform** - Works on Mac, Linux, Windows  
+
+---
+
+## 📦 What's New in v2.0
+
+- ✅ Modular package structure
+- ✅ Full type hints (100% coverage)
+- ✅ Professional architecture
+- ✅ Comprehensive documentation
+- ✅ Easy configuration management
+- ✅ Better error handling
+- ✅ Centralized logging
+
+---
+
+## 🔧 Installation
+
+### Requirements
+- Python 3.8+
+- LibreOffice or equivalent PDF converter
+
+### Setup
+
+1. **Install dependencies:**
+   ```bash
+   cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
+   pip install -r src/requirements.txt
+   pip install -e .
+   ```
+
+2. **Verify Google Sheet access:**
+   - Ensure your Google Sheet is publicly accessible
+   - Get your Spreadsheet ID from the URL: `docs.google.com/spreadsheets/d/{ID}/...`
+
+---
+
+## 💻 Usage
+
+### From Google Sheets
+```bash
+python -m av_lunchbox_stickerpdf.cli sheets 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
+```
+
+**This automatically:**
+- ✅ Fetches order data from Google Sheets
+- ✅ Generates formatted PDF from template
+- ✅ Creates summary report
+- ✅ Saves to `exports/YYYY-MM-DD/` with timestamp
+
+### From Image (OCR)
+```bash
+python -m av_lunchbox_stickerpdf.cli image order.png
+```
+
+### In Python Code
+```python
+from av_lunchbox_stickerpdf.cli import CLI
+
+cli = CLI()
+pdf_path = cli.generate_from_sheets("SPREADSHEET_ID")
+print(f"Generated: {pdf_path}")
+```
+
+---
+
+## 🎯 Core Features
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| **PDF Generation** | ✅ | Generate professional sticker PDFs |
+| **Google Sheets** | ✅ | Auto-fetch order data |
+| **OCR Extraction** | ✅ | Extract data from images |
+| **Summary Reports** | ✅ | Auto-generate statistics |
+| **Cross-platform** | ✅ | Mac, Linux, Windows support |
+| **Configuration** | ✅ | Centralized settings |
+| **Type Safety** | ✅ | 100% type hints |
+
+---
+
+## 📋 Output Example
+
 ```
 exports/2026-02-10/
-├── 2026-02-10_11:15 AM.pdf     # Generated sticker PDF
-└── 2026-02-10_11:15 AM.txt     # Summary report ⭐ NEW
+├── 2026-02-10_11:15 AM.pdf        # Generated sticker PDF
+└── 2026-02-10_11:15 AM.txt        # Summary report
 ```
 
-The date folder is automatically created if it doesn't exist.
-
-For more details on the summary feature, see [SUMMARY_GENERATOR.md](docs/SUMMARY_GENERATOR.md).
-
-## Features
-
-### Google Sheets Integration
-- **Automatic Data Extraction**: Reads lunch box orders from public Google Sheets
-- **Handles Merged Cells**: Correctly processes merged date cells across multiple rows
-- **Date Filtering**: Automatically extracts orders for today's date
-- **Multiple Orders**: Supports extracting all orders (even duplicates for the same person)
-
-### Data Extraction
-Extracts the following information from Google Sheets:
-- Order Number (S No)
-- Customer Full Name
-- Delivery Address
-- Phone Number
-- Type of Food (Veg/Non-Veg)
-- Type of Rice (White Rice/Pulav Rice)
-- Comments/Special Instructions
-
-### PDF Generation
-- **Dynamic Template Expansion**: Automatically adds rows to the template based on number of orders
-- **Smart Formatting**: Applies markers based on food and rice type combinations
-  - `--- VW ---` for Veg Comfort Box + White Rice
-  - `--- VP ---` for Veg Comfort Box + Pulav Rice
-  - `--- NVW ---` for Non-Veg Comfort Box + White Rice
-  - `--- NVP ---` for Non-Veg Comfort Box + Pulav Rice
-- **Cross-Platform PDF Conversion**: Uses LibreOffice, docx2pdf, or unoconv
-
-### Summary Generation ⭐ NEW
-- **Automatic Reports**: Creates summary text file alongside every PDF
-- **Order Statistics**: Total box count and breakdown by type
-- **Address Distribution**: Shows boxes per delivery address
-- **Same Naming**: Summary uses same timestamp as PDF for easy matching
-- **Same Location**: Saves to same `exports/YYYY-MM-DD/` folder
-
-Example summary report:
+**Summary Report Contents:**
 ```
 TOTAL BOXES: 17
 
@@ -155,138 +218,47 @@ Addresses (total boxes per address)
 •	3400 W Plano Pkwy: 5 boxes
 ```
 
-See [SUMMARY_GENERATOR.md](docs/SUMMARY_GENERATOR.md) for detailed documentation.
+---
 
-## Testing
+## 🐛 Troubleshooting
 
-Run test scripts to verify the setup:
+| Issue | Solution |
+|-------|----------|
+| PDF conversion fails | Install LibreOffice: `brew install libreoffice` |
+| Import errors | Ensure installed: `pip install -e .` |
+| Google Sheet not found | Verify Spreadsheet ID is correct and public |
+| No orders extracted | Check sheet has data for today's date |
 
-```bash
-# Test Google Sheets integration
-python3 tests/test_sheets.py
+See [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) for more help.
 
-# Test data extraction
-python3 tests/test_extraction.py
+---
 
-# Analyze sheet structure
-python3 tests/analyze_sheet_structure.py
-```
+## 📚 Learn More
 
-## System Requirements
+| Need Help With | Read This |
+|-----------------|-----------|
+| **Getting Started** | [`docs/guides/GETTING_STARTED_NEW.md`](docs/guides/GETTING_STARTED_NEW.md) |
+| **Architecture** | [`docs/guides/PROJECT_STRUCTURE.md`](docs/guides/PROJECT_STRUCTURE.md) |
+| **Navigation** | [`docs/guides/DOCUMENTATION_INDEX.md`](docs/guides/DOCUMENTATION_INDEX.md) |
+| **Quick Commands** | [`docs/guides/QUICK_COMMANDS.md`](docs/guides/QUICK_COMMANDS.md) |
+| **API Reference** | [`docs/SHEETS_API_REFERENCE.md`](docs/SHEETS_API_REFERENCE.md) |
+| **Troubleshooting** | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) |
 
-- **Python**: 3.8+
-- **Dependencies**: See `src/requirements.txt`
-- **PDF Conversion**: One of:
-  - LibreOffice (recommended for Mac/Linux)
-  - Microsoft Word (Windows)
-  - docx2pdf package
+---
 
-### Mac Installation
+## 🤝 Contributing
 
-```bash
-# Install LibreOffice for PDF conversion
-brew install libreoffice
+Found a bug? Want a feature? 
+- Review the code structure in `av_lunchbox_stickerpdf/`
+- Check existing documentation
+- Submit improvements
 
-# Install Python dependencies
-pip3 install -r src/requirements.txt
-pip3 install requests
-```
+---
 
-### Linux Installation
+## 📄 License
 
-```bash
-# Install LibreOffice
-sudo apt-get install libreoffice
+Internal use only.
 
-# Install Python dependencies
-pip3 install -r src/requirements.txt
-pip3 install requests
-```
+---
 
-### Windows Installation
-
-```bash
-# Install LibreOffice or have Microsoft Office installed
-# Then install Python dependencies
-pip install -r src/requirements.txt
-pip install requests
-pip install docx2pdf
-```
-
-## Troubleshooting
-
-- **"sheets_handler module not found"**: Ensure you're running the script from the correct directory or adjust the import path
-- **"requests module not found"**: Run `pip install requests`
-- **PDF conversion fails**: Install LibreOffice or docx2pdf (see System Requirements)
-- **Google Sheet not found**: Verify the Spreadsheet ID and that the sheet is publicly accessible
-- **No orders found**: Check that the Google Sheet contains data for today's date in the Date column
-
-For detailed troubleshooting, see `docs/TROUBLESHOOTING.md`
-
-## Documentation
-
-For detailed documentation, see the `docs/` folder:
-- `README_COMPLETE.md` - Complete implementation details
-- `GOOGLE_SHEETS_INTEGRATION.md` - Google Sheets setup guide
-- `GOOGLE_SHEETS_GUIDE.md` - Data extraction guide
-- `SHEETS_VS_OCR.md` - Comparison of Google Sheets vs OCR methods
-- `INDEX.md` - Documentation index
-- `TROUBLESHOOTING.md` - Common issues and solutions
-
-## Development
-
-### Running from Source
-
-**Command-Line Version (Google Sheets):**
-```bash
-# Navigate to project root
-cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
-
-# Run main script with Google Sheets
-python3 src/update_template.py Templates/AR_Template.docx \
-  --google-sheet 1442BcVZmlIU9nHhpoHi5to95AAWwU5VYjPMEUHg8azI
-```
-
-**Command-Line Version (Image/OCR):**
-```bash
-python3 src/update_template.py Templates/AR_Template.docx \
-  --image path/to/image.png
-```
-
-**GUI Version:**
-```bash
-# Run the GUI application
-python3 src/update_template_gui.py
-```
-
-### Building GUI Executable (Windows)
-
-To create a standalone Windows executable from the GUI:
-
-```bash
-cd src
-pyinstaller update_template_gui.spec
-```
-
-The compiled executable will be available in the `dist/` folder and can be run without Python installed.
-
-## Output
-
-Generated PDFs are saved in organized folders:
-- **Google Sheets exports:** `exports/YYYY-MM-DD/YYYY-MM-DD_HH:MM AM/PM.pdf`
-- **Image exports:** `exports/YYYY-MM-DD_HH:MM AM/PM.pdf`
-
-Date folders are automatically created when needed.
-
-**Example:** `exports/2026-02-09/2026-02-09_10:12 PM.pdf`
-
-## License
-
-This project is for internal use by the lunch box delivery service.
-
-## Support
-
-For issues or questions, refer to:
-1. `docs/TROUBLESHOOTING.md` for common problems
-2. `docs/README_COMPLETE.md` for detailed documentation
-3. Run test scripts in `tests/` folder to diagnose issues
+**Questions?** Check the [documentation index](docs/guides/DOCUMENTATION_INDEX.md) or review module docstrings in the package.
