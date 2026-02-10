@@ -28,6 +28,7 @@ Example:
 import sys
 import re
 from pathlib import Path
+from datetime import datetime
 
 # OCR and image processing
 try:
@@ -352,6 +353,35 @@ def convert_docx_to_pdf(docx_path, pdf_path):
         print("You can manually convert this to PDF.")
 
 
+def get_marker_for_box_rice(box_type, rice_type):
+    """
+    Determine the marker and font size increase based on box and rice type combinations.
+    
+    Returns: (marker_string, font_size_increase_pt)
+    - Veg Comfort Box + Pulav Rice: --- VP --- + 2pt
+    - Non-Veg Comfort Box + Pulav Rice: --- NVP --- + 2pt
+    - Veg Comfort Box + White Rice: --- VW --- + 2pt
+    - Non-Veg Comfort Box + White Rice: --- NVW --- + 2pt
+    """
+    # Check for Non-Veg FIRST to avoid matching "Veg" in "Non-Veg"
+    is_non_veg = "Non-Veg" in box_type
+    is_veg = "Veg" in box_type and not is_non_veg
+    is_comfort_box = "Comfort Box" in box_type
+    is_pulav = "Pulav Rice" in rice_type
+    
+    if is_comfort_box:
+        if is_veg and is_pulav:
+            return "--- VP ---", 2
+        elif is_non_veg and is_pulav:
+            return "--- NVP ---", 2
+        elif is_veg and not is_pulav:
+            return "--- VW ---", 2
+        elif is_non_veg and not is_pulav:
+            return "--- NVW ---", 2
+    
+    return "", 0
+
+
 def update_template_with_data(template_path, output_path, data_rows):
     """
     Update the Word template by replacing cell contents with extracted data.
@@ -408,13 +438,58 @@ def update_template_with_data(template_path, output_path, data_rows):
                     if idx > 0:
                         cell.add_paragraph()
                     para = cell.paragraphs[idx]
-                    para.text = line
-                    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    current_indent = para.paragraph_format.left_indent or Pt(0)
-                    if col_idx == 2:
-                        para.paragraph_format.left_indent = current_indent + Pt(2)
-                    elif col_idx == 4:
-                        para.paragraph_format.left_indent = current_indent + Pt(9)
+                    
+                    # For the third line (box_type - rice_type), add markers with special formatting
+                    if idx == 2:
+                        # Clear the paragraph
+                        para.clear()
+                        
+                        # Add the text
+                        run = para.add_run(line)
+                        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        
+                        # Get marker based on box/rice combination
+                        marker, font_size_increase = get_marker_for_box_rice(data['box_type'], data['rice_type'])
+                        
+                        # Get current font size (default to 11pt if not set)
+                        current_font_size = run.font.size
+                        if current_font_size is None:
+                            current_font_size = Pt(11)
+                        else:
+                            # Convert to Pt if it's in twips (EMU)
+                            if isinstance(current_font_size, int):
+                                current_font_size = Pt(current_font_size / 100)
+                        
+                        # Add marker in a separate paragraph if applicable
+                        if marker:
+                            # Create a new paragraph for markers
+                            marker_para = cell.add_paragraph()
+                            marker_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                            marker_run = marker_para.add_run(marker)
+                            marker_run.bold = True
+                            # Set marker font size to base + 2pt
+                            marker_run.font.size = current_font_size + Pt(font_size_increase)
+                            
+                            print(f"  Line 3: Added marker '{marker}' in separate paragraph (bold, +{font_size_increase}pt) for {data['box_type']} - {data['rice_type']}")
+                    elif idx == 0:
+                        # Name line - make it bold
+                        para.clear()
+                        run = para.add_run(line)
+                        run.bold = True
+                        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        current_indent = para.paragraph_format.left_indent or Pt(0)
+                        if col_idx == 2:
+                            para.paragraph_format.left_indent = current_indent + Pt(2)
+                        elif col_idx == 4:
+                            para.paragraph_format.left_indent = current_indent + Pt(9)
+                    else:
+                        para.text = line
+                        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        current_indent = para.paragraph_format.left_indent or Pt(0)
+                        if col_idx == 2:
+                            para.paragraph_format.left_indent = current_indent + Pt(2)
+                        elif col_idx == 4:
+                            para.paragraph_format.left_indent = current_indent + Pt(9)
                 
                 if col_idx == 4:
                     set_cell_margins(cell, left=100)
@@ -442,20 +517,20 @@ def update_template_with_data(template_path, output_path, data_rows):
 
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python update_template.py <input_image> <template.docx> <output.pdf>")
+    if len(sys.argv) != 3:
+        print("Usage: python update_template.py <input_image> <template.docx>")
         print("\nExample:")
-        print("  python update_template.py input.png template.docx output.pdf")
+        print("  python update_template.py input.png template.docx")
+        print("\nThe PDF will be saved with today's date and time (e.g., 2026-02-09_03:45 PM.pdf)")
         sys.exit(1)
     
     image_path = sys.argv[1]
     template_path = sys.argv[2]
-    output_path = sys.argv[3]
     
-    # Ensure output has .pdf extension
-    if not output_path.lower().endswith('.pdf'):
-        output_path = output_path.rsplit('.', 1)[0] + '.pdf'
-        print(f"Output will be saved as: {output_path}")
+    # Generate output filename with today's date and time (e.g., 2026-02-09_03:45 PM.pdf)
+    now = datetime.now()
+    date_time = now.strftime("%Y-%m-%d_%I:%M %p")
+    output_path = f"{date_time}.pdf"
     
     # Check if files exist
     if not Path(image_path).exists():
