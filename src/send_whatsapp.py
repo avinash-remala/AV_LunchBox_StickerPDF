@@ -74,18 +74,21 @@ def main():
     from twilio.rest import Client
     client = Client(account_sid, auth_token)
 
-    # 1. Send summary as text message
-    print("Sending summary via WhatsApp...")
-    send_message(client, to_number, body=summary_text)
-    print("✓ Summary sent")
-
-    # 2. Upload PDF and send as media message
+    # Upload PDF and get public URL
     print(f"Uploading PDF: {pdf_path}")
     pdf_url = upload_pdf(pdf_path)
     print(f"PDF URL: {pdf_url}")
 
-    send_message(client, to_number, media_url=pdf_url)
-    print("✓ PDF sent")
+    # Send summary + PDF link as text
+    print("Sending summary with PDF link...")
+    message = f"{summary_text}\n\n📄 PDF: {pdf_url}"
+    send_message(client, to_number, body=message)
+    print("✓ Summary + link sent")
+
+    # Also send PDF as media attachment
+    print("Sending PDF as media attachment...")
+    send_message(client, to_number, body="📎 Lunch PDF attached:", media_url=pdf_url)
+    print("✓ Media attachment sent")
 
 
 if __name__ == "__main__":
