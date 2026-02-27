@@ -1,0 +1,38 @@
+name: Generate Lunch PDF
+
+on:
+  workflow_dispatch:   # Trigger manually from GitHub Actions UI
+
+  # Uncomment below to run automatically on a schedule (times are UTC):
+  # schedule:
+  #   - cron: '30 16 * * 1-5'   # 10:30 AM CST, Mon–Fri
+  #   - cron: '30 17 * * 1-5'   # 11:30 AM CST, Mon–Fri
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y libreoffice
+
+      - name: Install Python dependencies
+        run: pip install -r src/requirements.txt
+
+      - name: Generate PDF and summary
+        run: python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet ${{ secrets.SPREADSHEET_ID }}
+
+      - name: Upload PDF and summary as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunch-pdf-${{ github.run_number }}
+          path: exports/
+          retention-days: 30
