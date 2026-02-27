@@ -19,18 +19,52 @@ TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
 
 
 def upload_pdf(pdf_path: str) -> str:
-    """Upload PDF to catbox.moe (free permanent host) and return the public URL."""
-    with open(pdf_path, "rb") as f:
-        response = requests.post(
-            "https://catbox.moe/user/api.php",
-            data={"reqtype": "fileupload"},
-            files={"fileToUpload": (Path(pdf_path).name, f, "application/pdf")},
-            timeout=60
+    """Upload PDF as a GitHub Release asset and return the public download URL."""
+    token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY")  # e.g. avinash-remala/AV_LunchBox_StickerPDF
+
+    if not token or not repo:
+        raise RuntimeError("GITHUB_TOKEN and GITHUB_REPOSITORY must be set")
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    tag = f"lunch-{today}"
+    filename = Path(pdf_path).name
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    # Get or create a release for today
+    release_resp = requests.get(
+        f"https://api.github.com/repos/{repo}/releases/tags/{tag}", headers=headers
+    )
+    if release_resp.status_code == 404:
+        release_resp = requests.post(
+            f"https://api.github.com/repos/{repo}/releases",
+            headers=headers,
+            json={"tag_name": tag, "name": f"Lunch Orders {today}", "draft": False, "prerelease": False},
+            timeout=30,
         )
-    url = response.text.strip()
-    if not url.startswith("https://"):
-        raise RuntimeError(f"Upload failed. Response: {url}")
-    return url
+    release = release_resp.json()
+
+    # Delete existing asset with same name if any (re-run case)
+    for asset in release.get("assets", []):
+        if asset["name"] == filename:
+            requests.delete(
+                f"https://api.github.com/repos/{repo}/releases/assets/{asset['id']}",
+                headers=headers, timeout=30
+            )
+
+    # Upload PDF asset
+    upload_url = release["upload_url"].replace("{?name,label}", f"?name={filename}")
+    with open(pdf_path, "rb") as f:
+        upload_resp = requests.post(
+            upload_url,
+            headers={**headers, "Content-Type": "application/pdf"},
+            data=f,
+            timeout=120,
+        )
+    return upload_resp.json()["browser_download_url"]
 
 
 def send_message(client, to_number: str, body: str = None, media_url: str = None):
