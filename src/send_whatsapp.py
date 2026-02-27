@@ -5,7 +5,7 @@ Send today's lunch PDF and summary via WhatsApp using Twilio.
 Required environment variables:
     TWILIO_SID      - Twilio Account SID
     TWILIO_TOKEN    - Twilio Auth Token
-    WHATSAPP_TO     - Recipient WhatsApp number (e.g. +12345678900)
+    WHATSAPP_TO     - Recipient WhatsApp numbers, comma-separated (e.g. +12345678900,+19876543210)
 """
 
 import os
@@ -129,16 +129,17 @@ def main():
     else:
         message = summary_text
 
-    # Send summary text
-    print("Sending summary...")
-    send_message(client, to_number, body=message)
-    print("✓ Summary sent")
+    # Send to all recipients (comma-separated numbers)
+    recipients = [n.strip() for n in to_number.split(",") if n.strip()]
+    print(f"Sending to {len(recipients)} recipient(s)...")
 
-    if send_pdf:
-        # Also send PDF as media attachment
-        print("Sending PDF as media attachment...")
-        send_message(client, to_number, body="📎 Lunch PDF attached:", media_url=pdf_url)
-        print("✓ PDF attachment sent")
+    for number in recipients:
+        print(f"  → {number}")
+        send_message(client, number, body=message)
+        if send_pdf:
+            send_message(client, number, body="📎 Lunch PDF attached:", media_url=pdf_url)
+
+    print("✓ Done")
 
 
 if __name__ == "__main__":

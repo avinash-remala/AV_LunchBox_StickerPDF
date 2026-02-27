@@ -138,7 +138,7 @@ The "Include PDF attachment" checkbox is checked by default — always sends sum
 | `SPREADSHEET_ID` | Google Sheets spreadsheet ID |
 | `TWILIO_SID` | Twilio Account SID |
 | `TWILIO_TOKEN` | Twilio Auth Token |
-| `WHATSAPP_TO` | Recipient WhatsApp number (e.g. `+12345678900`) |
+| `WHATSAPP_TO` | Recipient WhatsApp numbers, comma-separated (e.g. `+12345678900,+19876543210`) |
 
 ### How it works
 
