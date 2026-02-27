@@ -24,6 +24,7 @@ def upload_pdf(pdf_path: str) -> str:
         response = requests.post(
             "https://0x0.st",
             files={"file": (Path(pdf_path).name, f, "application/pdf")},
+            headers={"User-Agent": "Mozilla/5.0 (compatible; LunchBoxBot/1.0)"},
             timeout=60
         )
     url = response.text.strip()
