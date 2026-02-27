@@ -8,9 +8,15 @@ Generate lunch box order PDFs and summaries from Google Sheets.
 
 ## Quick Start
 
+**From Google Sheets (primary):**
 ```bash
 cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
 python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet SPREADSHEET_ID
+```
+
+**From an image (OCR):**
+```bash
+python3 src/generate_pdf.py templates/AR_Template.docx --image path/to/orders.png
 ```
 
 **Example:**
@@ -22,10 +28,15 @@ python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet 1442BcVZml
 
 ## What It Does
 
+**Google Sheets mode (`--google-sheet`):**
 1. Fetches today's orders from the Google Sheet (public CSV export)
 2. Generates a sticker PDF using the Word template
 3. Saves a summary `.txt` report
 4. Cleans up old export folders (keeps only today's)
+
+**Image mode (`--image`):**
+1. Extracts order data from an image using OCR (tesseract)
+2. Generates a sticker PDF and summary from the extracted data
 
 All output goes to `exports/YYYY-MM-DD/` with a timestamp filename.
 
@@ -69,17 +80,18 @@ The `.txt` summary includes:
 
 **Example:**
 ```
-TOTAL BOXES: 11
+TOTAL BOXES: 14
 
 Boxes (count by type)
+•   Veg Comfort Box + Pulav Rice: 5
 •   Non-Veg Comfort Box + Pulav Rice: 4
-•   Non-Veg Special Box + NA: 3
-•   Veg Special Box + NA: 2
-•   Veg Special Box - Egg Biryani + NA: 2
+•   Non-Veg Comfort Box + White Rice: 2
+•   Veg Special Box + Pulav Rice: 2
+•   Non-Veg Special Box + Pulav Rice: 1
 
 Addresses (total boxes per address)
-•   2900 Plano Pkwy: 6 boxes
-•   3400 W Plano Pkwy: 5 boxes
+•   2900 Plano Pkwy: 8 boxes
+•   3400 W Plano Pkwy: 6 boxes
 ```
 
 ---
@@ -106,13 +118,32 @@ Rows with a blank `Date` cell are grouped under the last non-blank date above th
 ```
 AV_LunchBox_StickerPDF/
 ├── src/
-│   └── generate_pdf.py       # Main script — all logic lives here
+│   ├── generate_pdf.py       # Main script — all logic lives here
+│   ├── requirements.txt      # Python dependencies
+│   └── setup.sh              # Setup helper
+│
 ├── templates/
 │   └── AR_Template.docx      # Word template (3-column sticker layout)
-├── exports/
+│
+├── assets/
+│   └── logo.png              # Brand logo (not used in stickers)
+│
+├── exports/                  # Auto-created on first run
 │   └── YYYY-MM-DD/
 │       ├── *.pdf             # Generated sticker PDF
 │       └── *.txt             # Summary report
+│
+├── av_lunchbox_stickerpdf/   # Python package (legacy, not used by run command)
+│   ├── core/
+│   ├── data/
+│   ├── report/
+│   ├── cli/
+│   ├── config/
+│   └── utils/
+│
+├── tests/                    # Test suite (pytest)
+├── docs/                     # Project documentation
+├── pyproject.toml
 └── README.md
 ```
 
@@ -121,12 +152,17 @@ AV_LunchBox_StickerPDF/
 ## Requirements
 
 - Python 3.9+
-- LibreOffice (for PDF conversion)
-- Dependencies auto-installed on first run: `pillow`, `pytesseract`, `python-docx`, `requests`
+- LibreOffice (for DOCX → PDF conversion)
+- tesseract (only needed for `--image` mode)
 
-**Install LibreOffice (macOS):**
+**Install Python dependencies:**
 ```bash
-brew install libreoffice
+pip install -r src/requirements.txt
+```
+
+**Install system dependencies (macOS):**
+```bash
+brew install libreoffice tesseract
 ```
 
 ---
@@ -138,6 +174,8 @@ brew install libreoffice
 | PDF conversion fails | Install LibreOffice: `brew install libreoffice` |
 | No orders extracted | Check the sheet has rows for today's date |
 | Google Sheet not found | Verify the Spreadsheet ID and that the sheet is public |
+| OCR gives bad results | Install tesseract: `brew install tesseract` |
+| Import error on run | Run `pip install -r src/requirements.txt` |
 
 ---
 
