@@ -589,12 +589,7 @@ def update_template_with_data(template_path, output_path, data_rows):
                 tbl.append(new_row)
                 print(f"Added new row (total now: {len(table.rows)})")
     
-    # Get watermark path (auto-creates from logo if needed)
-    watermark_path = get_watermark_path()
-    if watermark_path:
-        print(f"✓ Watermark enabled: {watermark_path}")
-    else:
-        print("ℹ No watermark (place logo at assets/logo.png to enable)")
+    watermark_path = None
     
     # Now fill all rows with data
     for row_idx, row in enumerate(table.rows):
@@ -635,6 +630,15 @@ def update_template_with_data(template_path, output_path, data_rows):
                             if isinstance(current_font_size, int):
                                 current_font_size = Pt(current_font_size / 100)
                         
+                        # Add comments line if present (italic, 2pt smaller than address font)
+                        comments = data.get('comments', '').strip()
+                        if comments:
+                            comments_para = cell.add_paragraph()
+                            comments_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                            comments_run = comments_para.add_run(comments)
+                            comments_run.italic = True
+                            comments_run.font.size = current_font_size - Pt(2)
+
                         # Add marker in a separate paragraph if applicable
                         if marker:
                             # Create a new paragraph for markers

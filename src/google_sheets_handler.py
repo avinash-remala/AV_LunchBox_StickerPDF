@@ -180,7 +180,8 @@ def get_todays_lunch_orders(spreadsheet_id, sheet_id=0):
                 'name': name,
                 'address': address,
                 'box_type': box_type,
-                'rice_type': rice_type
+                'rice_type': rice_type,
+                'comments': row.get('Comments', '').strip()
             })
             print(f"  Order {len(orders)}: {name} - {box_type} - {rice_type}")
     
