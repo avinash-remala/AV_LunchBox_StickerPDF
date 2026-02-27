@@ -28,7 +28,7 @@ jobs:
         run: pip install -r src/requirements.txt
 
       - name: Generate PDF and summary
-        run: python3 src/generate_pdf.py templates/AR_Template.docx --google-sheet ${{ secrets.SPREADSHEET_ID }}
+        run: python3 src/generate_pdf.py Templates/AR_Template.docx --google-sheet ${{ secrets.SPREADSHEET_ID }}
 
       - name: Upload PDF and summary as artifacts
         uses: actions/upload-artifact@v4
