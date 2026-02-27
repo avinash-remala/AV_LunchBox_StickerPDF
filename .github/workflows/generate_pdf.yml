@@ -11,6 +11,8 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Required to create GitHub Releases and upload assets
 
     steps:
       - name: Checkout repository

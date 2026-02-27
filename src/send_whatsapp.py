@@ -46,6 +46,9 @@ def upload_pdf(pdf_path: str) -> str:
             timeout=30,
         )
     release = release_resp.json()
+    if "upload_url" not in release:
+        print(f"GitHub Release API error (status {release_resp.status_code}): {release}")
+        raise RuntimeError(f"Failed to get/create GitHub Release: {release.get('message', 'unknown error')}")
 
     # Delete existing asset with same name if any (re-run case)
     for asset in release.get("assets", []):
