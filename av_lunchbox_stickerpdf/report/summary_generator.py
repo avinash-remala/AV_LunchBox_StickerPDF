@@ -18,7 +18,11 @@ class SummaryGenerator:
         "Veg Comfort Box + Pulav Rice",
         "Non-Veg Comfort Box + Pulav Rice",
         "Veg Comfort Box + White Rice",
-        "Non-Veg Comfort Box + White Rice"
+        "Non-Veg Comfort Box + White Rice",
+        "Veg Special Box + Pulav Rice",
+        "Veg Special Box + White Rice",
+        "Non-Veg Special Box + Pulav Rice",
+        "Non-Veg Special Box + White Rice",
     ]
     
     @classmethod

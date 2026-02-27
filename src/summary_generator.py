@@ -56,10 +56,11 @@ def generate_summary(orders):
         "Non-Veg Comfort Box + White Rice"
     ]
     
-    # Add all standard combinations (with counts or 0)
+    # Add all standard combinations (only those with non-zero counts)
     for combo in standard_combinations:
         count = box_rice_combinations.get(combo, 0)
-        summary_lines.append(f"•\t{combo}: {count}")
+        if count > 0:
+            summary_lines.append(f"•\t{combo}: {count}")
     
     # Add any non-standard combinations
     for combo, count in sorted(box_rice_combinations.items()):

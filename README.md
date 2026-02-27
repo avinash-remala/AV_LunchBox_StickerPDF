@@ -2,7 +2,7 @@
 
 Generate professional lunch box order PDFs and summaries from Google Sheets or images using OCR.
 
-**Version:** 2.0.0 | **Status:** ✅ Production Ready
+**Version:** 2.1.0 | **Status:** ✅ Production Ready
 
 ---
 
@@ -78,10 +78,16 @@ AV_LunchBox_StickerPDF/
 │       ├── *.pdf
 │       └── *.txt (summaries)
 │
-├── tests/                           Test suite
-│   └── *.py
+├── tests/                           Test suite (pytest)
+│   ├── test_models.py
+│   ├── test_markers.py
+│   ├── test_summary.py
+│   ├── test_file_utils.py
+│   ├── test_order_extractor.py
+│   └── test_config.py
 │
-├── setup.py                         Package installation
+├── pyproject.toml                   Modern Python packaging
+├── setup.py                         Legacy package installation
 ├── README.md                        This file
 └── .gitignore
 
@@ -119,22 +125,22 @@ Detailed implementation docs in [`docs/archived/`](docs/archived/)
 
 ---
 
-## 📦 What's New in v2.0
+## 📦 What's New in v2.1
 
-- ✅ Modular package structure
-- ✅ Full type hints (100% coverage)
-- ✅ Professional architecture
-- ✅ Comprehensive documentation
-- ✅ Easy configuration management
-- ✅ Better error handling
-- ✅ Centralized logging
+- ✅ **Proper test suite** — 73 pytest tests covering models, markers, summaries, config, utils
+- ✅ **Marker logic module** — Extracted into `core/markers.py` with data-driven design
+- ✅ **Special Box support** — `VEG_SPECIAL` and `NON_VEG_SPECIAL` in enums & summaries
+- ✅ **Structured logging** — `get_logger()` replaces raw `print()` calls
+- ✅ **Modern packaging** — `pyproject.toml` with `[project.optional-dependencies]`
+- ✅ **PDFGenerator synced** — Marker logic, bold names, indentation, cell margins
+- ✅ **`.gitignore`** — Proper exclusions for `__pycache__`, `dist/`, `.venv/`, etc.
 
 ---
 
 ## 🔧 Installation
 
 ### Requirements
-- Python 3.8+
+- Python 3.9+
 - LibreOffice or equivalent PDF converter
 
 ### Setup
@@ -142,11 +148,15 @@ Detailed implementation docs in [`docs/archived/`](docs/archived/)
 1. **Install dependencies:**
    ```bash
    cd /Users/avinashremala/Desktop/AV_LunchBox_StickerPDF
-   pip install -r src/requirements.txt
    pip install -e .
    ```
 
-2. **Verify Google Sheet access:**
+2. **Install dev/test dependencies (optional):**
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+3. **Verify Google Sheet access:**
    - Ensure your Google Sheet is publicly accessible
    - Get your Spreadsheet ID from the URL: `docs.google.com/spreadsheets/d/{ID}/...`
 
@@ -192,6 +202,25 @@ print(f"Generated: {pdf_path}")
 | **Cross-platform** | ✅ | Mac, Linux, Windows support |
 | **Configuration** | ✅ | Centralized settings |
 | **Type Safety** | ✅ | 100% type hints |
+| **Test Suite** | ✅ | 73 pytest tests |
+
+---
+
+## 🧪 Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run with coverage report
+pytest --cov=av_lunchbox_stickerpdf --cov-report=term-missing
+
+# Run a specific test file
+pytest tests/test_markers.py -v
+```
 
 ---
 
@@ -208,10 +237,14 @@ exports/2026-02-10/
 TOTAL BOXES: 17
 
 Boxes (count by type)
-•	Veg Comfort Box + Pulav Rice: 11
-•	Non-Veg Comfort Box + Pulav Rice: 6
+•	Veg Comfort Box + Pulav Rice: 9
+•	Non-Veg Comfort Box + Pulav Rice: 4
 •	Veg Comfort Box + White Rice: 0
 •	Non-Veg Comfort Box + White Rice: 0
+•	Veg Special Box + Pulav Rice: 2
+•	Veg Special Box + White Rice: 0
+•	Non-Veg Special Box + Pulav Rice: 2
+•	Non-Veg Special Box + White Rice: 0
 
 Addresses (total boxes per address)
 •	2900 Plano Pkwy: 12 boxes

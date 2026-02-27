@@ -46,10 +46,11 @@ except ImportError:
 try:
     from docx import Document
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.shared import Pt, RGBColor, Inches
+    from docx.shared import Pt, RGBColor, Inches, Cm
     from docx.oxml import OxmlElement
-    from docx.oxml.ns import qn
+    from docx.oxml.ns import qn, nsdecls
     from docx.enum.dml import MSO_THEME_COLOR
+    from docx.opc.constants import RELATIONSHIP_TYPE as RT
 except ImportError:
     print("Installing python-docx...")
     import subprocess
@@ -57,10 +58,11 @@ except ImportError:
                           "python-docx", "--break-system-packages"])
     from docx import Document
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.shared import Pt, RGBColor, Inches
+    from docx.shared import Pt, RGBColor, Inches, Cm
     from docx.oxml import OxmlElement
-    from docx.oxml.ns import qn
+    from docx.oxml.ns import qn, nsdecls
     from docx.enum.dml import MSO_THEME_COLOR
+    from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 
 def extract_table_data_from_image(image_path):
@@ -362,12 +364,21 @@ def get_marker_for_box_rice(box_type, rice_type):
     - Non-Veg Comfort Box + Pulav Rice: --- NVP --- + 2pt
     - Veg Comfort Box + White Rice: --- VW --- + 2pt
     - Non-Veg Comfort Box + White Rice: --- NVW --- + 2pt
+    - Non-Veg Special Box: --- NVSP --- + 2pt
+    - Veg Special Box: --- VSP --- + 2pt
     """
     # Check for Non-Veg FIRST to avoid matching "Veg" in "Non-Veg"
     is_non_veg = "Non-Veg" in box_type
     is_veg = "Veg" in box_type and not is_non_veg
     is_comfort_box = "Comfort Box" in box_type
+    is_special_box = "Special Box" in box_type
     is_pulav = "Pulav Rice" in rice_type
+    
+    if is_special_box:
+        if is_non_veg:
+            return "--- NVSP ---", 2
+        elif is_veg:
+            return "--- VSP ---", 2
     
     if is_comfort_box:
         if is_veg and is_pulav:
@@ -380,6 +391,163 @@ def get_marker_for_box_rice(box_type, rice_type):
             return "--- NVW ---", 2
     
     return "", 0
+
+
+def create_watermark_image(logo_path, opacity=0.20, cell_size=(200, 80), output_path=None):
+    """
+    Convert a logo to a grayscale watermark with specified opacity.
+    
+    Args:
+        logo_path: Path to the original logo image
+        opacity: Opacity level (0.0-1.0). Default 20%
+        cell_size: Target (width, height) in pixels
+        output_path: Where to save. If None, saves next to logo.
+    
+    Returns:
+        Path to watermark image, or None on failure
+    """
+    try:
+        if not Path(logo_path).exists():
+            print(f"Logo not found: {logo_path}")
+            return None
+
+        print(f"Creating watermark from: {logo_path} (opacity={opacity*100:.0f}%)")
+
+        img = Image.open(logo_path).convert("RGBA")
+        grayscale = img.convert("L")
+
+        # Build alpha: original alpha * opacity, ensuring visible pixels stay visible
+        orig_alpha = img.split()[3]
+        alpha = orig_alpha.point(lambda p: max(1, int(p * opacity)) if p > 10 else 0)
+
+        gray_rgba = Image.merge("RGBA", (grayscale, grayscale, grayscale, alpha))
+
+        gray_rgba.thumbnail(cell_size, Image.LANCZOS)
+
+        # Save directly (no canvas — avoids compositing that destroys alpha)
+        if output_path is None:
+            output_path = str(Path(logo_path).parent / f"{Path(logo_path).stem}_watermark.png")
+
+        gray_rgba.save(output_path, "PNG")
+        print(f"✓ Watermark saved: {output_path}")
+        return output_path
+    except Exception as e:
+        print(f"Error creating watermark: {e}")
+        return None
+
+
+def get_watermark_path():
+    """Get or create the watermark image. Returns path or None."""
+    script_dir = Path(__file__).parent.parent
+    watermark_path = script_dir / "assets" / "logo_watermark.png"
+    logo_path = script_dir / "assets" / "logo.png"
+
+    if watermark_path.exists():
+        return str(watermark_path)
+    if logo_path.exists():
+        return create_watermark_image(str(logo_path), output_path=str(watermark_path))
+    return None
+
+
+def insert_watermark_into_cell(doc, cell, watermark_path):
+    """
+    Insert a watermark image into a cell as a behind-text anchored image.
+    Sized and positioned to fit centred within the cell (6.47cm × 2.54cm).
+    """
+    from lxml import etree
+
+    if not watermark_path or not Path(watermark_path).exists():
+        return
+
+    para = cell.paragraphs[0]
+    part = para.part
+
+    rel_id = part.relate_to(
+        part.package.get_or_add_image_part(watermark_path),
+        RT.IMAGE,
+    )
+
+    with Image.open(watermark_path) as img:
+        img_width_px, img_height_px = img.size
+
+    # Cell is ~6.47cm wide × 2.54cm tall.
+    # Fit watermark to ~80% of cell height, then reduce by 20%.
+    max_height = Cm(2.0 * 0.8)   # 20% smaller
+    max_width  = Cm(5.0 * 0.8)   # 20% smaller
+
+    aspect = img_width_px / img_height_px
+    # Height-constrained sizing
+    cy = int(max_height)
+    cx = int(cy * aspect)
+    # If too wide, constrain by width instead
+    if cx > int(max_width):
+        cx = int(max_width)
+        cy = int(cx / aspect)
+
+    # Left-aligned with 3px margin from left border
+    # 3px ≈ 2.25pt ≈ 28575 EMU
+    h_offset = 28575
+    # Top-aligned with small margin (~3px) from top border
+    v_offset = 28575
+
+    unique_id = id(cell) & 0xFFFFFFFF
+    anchor_xml = (
+        f'<wp:anchor distT="0" distB="0" distL="0" distR="0" '
+        f'simplePos="0" relativeHeight="0" behindDoc="1" locked="1" '
+        f'layoutInCell="1" allowOverlap="0" '
+        f'{nsdecls("wp", "a", "pic", "r")}>'
+        f'  <wp:simplePos x="0" y="0"/>'
+        f'  <wp:positionH relativeFrom="column">'
+        f'    <wp:posOffset>{h_offset}</wp:posOffset>'
+        f'  </wp:positionH>'
+        f'  <wp:positionV relativeFrom="paragraph">'
+        f'    <wp:posOffset>{v_offset}</wp:posOffset>'
+        f'  </wp:positionV>'
+        f'  <wp:extent cx="{cx}" cy="{cy}"/>'
+        f'  <wp:effectExtent l="0" t="0" r="0" b="0"/>'
+        f'  <wp:wrapNone/>'
+        f'  <wp:docPr id="{unique_id}" name="Watermark {unique_id}"/>'
+        f'  <wp:cNvGraphicFramePr>'
+        f'    <a:graphicFrameLocks noChangeAspect="1"/>'
+        f'  </wp:cNvGraphicFramePr>'
+        f'  <a:graphic>'
+        f'    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+        f'      <pic:pic>'
+        f'        <pic:nvPicPr>'
+        f'          <pic:cNvPr id="{unique_id}" name="watermark.png"/>'
+        f'          <pic:cNvPicPr/>'
+        f'        </pic:nvPicPr>'
+        f'        <pic:blipFill>'
+        f'          <a:blip r:embed="{rel_id}"/>'
+        f'          <a:stretch>'
+        f'            <a:fillRect/>'
+        f'          </a:stretch>'
+        f'        </pic:blipFill>'
+        f'        <pic:spPr>'
+        f'          <a:xfrm>'
+        f'            <a:off x="0" y="0"/>'
+        f'            <a:ext cx="{cx}" cy="{cy}"/>'
+        f'          </a:xfrm>'
+        f'          <a:prstGeom prst="rect">'
+        f'            <a:avLst/>'
+        f'          </a:prstGeom>'
+        f'        </pic:spPr>'
+        f'      </pic:pic>'
+        f'    </a:graphicData>'
+        f'  </a:graphic>'
+        f'</wp:anchor>'
+    )
+
+    anchor_element = etree.fromstring(anchor_xml)
+    drawing = OxmlElement('w:drawing')
+    drawing.append(anchor_element)
+
+    if not para.runs:
+        run_element = OxmlElement('w:r')
+        para._element.append(run_element)
+    else:
+        run_element = para.runs[0]._element
+    run_element.append(drawing)
 
 
 def update_template_with_data(template_path, output_path, data_rows):
@@ -420,6 +588,13 @@ def update_template_with_data(template_path, output_path, data_rows):
                 new_row = deepcopy(reference_row._element)
                 tbl.append(new_row)
                 print(f"Added new row (total now: {len(table.rows)})")
+    
+    # Get watermark path (auto-creates from logo if needed)
+    watermark_path = get_watermark_path()
+    if watermark_path:
+        print(f"✓ Watermark enabled: {watermark_path}")
+    else:
+        print("ℹ No watermark (place logo at assets/logo.png to enable)")
     
     # Now fill all rows with data
     for row_idx, row in enumerate(table.rows):
@@ -482,6 +657,9 @@ def update_template_with_data(template_path, output_path, data_rows):
                             para.paragraph_format.left_indent = current_indent + Pt(2)
                         elif col_idx == 4:
                             para.paragraph_format.left_indent = current_indent + Pt(9)
+                        # Insert watermark behind text on the first paragraph
+                        if watermark_path:
+                            insert_watermark_into_cell(doc, cell, watermark_path)
                     else:
                         para.text = line
                         para.alignment = WD_ALIGN_PARAGRAPH.CENTER

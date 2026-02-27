@@ -10,6 +10,9 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 
 from ..core.models import Order
+from ..config.logging_config import get_logger
+
+log = get_logger("data.sheets_handler")
 
 
 class GoogleSheetsClient:
@@ -33,7 +36,7 @@ class GoogleSheetsClient:
         csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={sheet_id}"
         
         try:
-            print(f"Fetching Google Sheet data from: {csv_url}")
+            log.info(f"Fetching Google Sheet data (gid={sheet_id})")
             response = requests.get(csv_url, timeout=self.timeout)
             response.raise_for_status()
             
@@ -41,11 +44,11 @@ class GoogleSheetsClient:
             csv_reader = csv.DictReader(StringIO(response.text))
             rows = list(csv_reader)
             
-            print(f"Fetched {len(rows)} rows from Google Sheet")
+            log.info(f"Fetched {len(rows)} rows from Google Sheet")
             return rows, csv_reader.fieldnames
         
         except requests.exceptions.RequestException as e:
-            print(f"Error fetching Google Sheet: {e}")
+            log.error(f"Error fetching Google Sheet: {e}")
             return [], []
 
 
@@ -88,10 +91,10 @@ class OrderExtractor:
         
         for row in rows:
             if date_column in row and row[date_column].strip() in today_formats:
-                print(f"Found today's row: {row}")
+                log.debug(f"Found today's row: {row}")
                 return row
         
-        print(f"No row found for today's date: {today_formats}")
+        log.warning(f"No row found for today's date: {today_formats}")
         return None
     
     def extract_single_row(self, row: Dict[str, str], row_index: int = 0) -> Order:
@@ -116,10 +119,10 @@ class OrderExtractor:
     def extract_orders_from_rows(self, rows: List[Dict[str, str]]) -> List[Order]:
         """
         Extract multiple orders from sheet rows.
-        
+
         Args:
             rows: List of row dictionaries from CSV
-        
+
         Returns:
             List of Order objects
         """
@@ -128,5 +131,5 @@ class OrderExtractor:
             order = self.extract_single_row(row, row_index=idx)
             if order.name and order.address:  # Only include non-empty orders
                 orders.append(order)
-        
+
         return orders
