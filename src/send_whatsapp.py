@@ -114,25 +114,31 @@ def main():
     pdf_path = str(pdf_files[-1])   # Most recent
     summary_text = txt_files[-1].read_text()
 
+    send_pdf = os.environ.get("SEND_PDF", "false").lower() == "true"
+
     # Import Twilio (installed in workflow)
     from twilio.rest import Client
     client = Client(account_sid, auth_token)
 
-    # Upload PDF and get public URL
-    print(f"Uploading PDF: {pdf_path}")
-    pdf_url = upload_pdf(pdf_path)
-    print(f"PDF URL: {pdf_url}")
+    if send_pdf:
+        # Upload PDF and get public URL
+        print(f"Uploading PDF: {pdf_path}")
+        pdf_url = upload_pdf(pdf_path)
+        print(f"PDF URL: {pdf_url}")
+        message = f"{summary_text}\n\n📄 PDF: {pdf_url}"
+    else:
+        message = summary_text
 
-    # Send summary + PDF link as text
-    print("Sending summary with PDF link...")
-    message = f"{summary_text}\n\n📄 PDF: {pdf_url}"
+    # Send summary text
+    print("Sending summary...")
     send_message(client, to_number, body=message)
-    print("✓ Summary + link sent")
+    print("✓ Summary sent")
 
-    # Also send PDF as media attachment
-    print("Sending PDF as media attachment...")
-    send_message(client, to_number, body="📎 Lunch PDF attached:", media_url=pdf_url)
-    print("✓ Media attachment sent")
+    if send_pdf:
+        # Also send PDF as media attachment
+        print("Sending PDF as media attachment...")
+        send_message(client, to_number, body="📎 Lunch PDF attached:", media_url=pdf_url)
+        print("✓ PDF attachment sent")
 
 
 if __name__ == "__main__":

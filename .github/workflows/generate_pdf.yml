@@ -1,12 +1,16 @@
-name: Generate Lunch PDF
+name: WhatsApp Message
 
 on:
   workflow_dispatch:   # Trigger manually from GitHub Actions UI
+    inputs:
+      send_pdf:
+        description: 'Include PDF attachment'
+        type: boolean
+        default: false
 
-  # Uncomment below to run automatically on a schedule (times are UTC):
-  # schedule:
-  #   - cron: '30 16 * * 1-5'   # 10:30 AM CST, Mon–Fri
-  #   - cron: '30 17 * * 1-5'   # 11:30 AM CST, Mon–Fri
+  schedule:
+    - cron: '44 16 * * 1-5'   # 10:44 AM CST (UTC-6), Mon–Fri  → summary only
+    - cron: '34 17 * * 1-5'   # 11:34 AM CST (UTC-6), Mon–Fri  → summary + PDF
 
 jobs:
   generate:
@@ -42,11 +46,12 @@ jobs:
       - name: Install Twilio
         run: pip install twilio
 
-      - name: Send WhatsApp notifications
+      - name: WhatsApp Message
         env:
           TWILIO_SID: ${{ secrets.TWILIO_SID }}
           TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
           WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          SEND_PDF: ${{ github.event.schedule == '34 17 * * 1-5' || github.event.inputs.send_pdf == 'true' }}
         run: python3 src/send_whatsapp.py
