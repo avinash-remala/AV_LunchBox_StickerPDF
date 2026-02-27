@@ -13,7 +13,6 @@ import sys
 import requests
 from pathlib import Path
 from datetime import datetime
-from urllib.parse import quote
 
 
 TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
@@ -59,8 +58,8 @@ def upload_pdf(pdf_path: str) -> str:
                 headers=headers, timeout=30
             )
 
-    # Upload PDF asset (URL-encode filename to handle spaces)
-    upload_url = release["upload_url"].replace("{?name,label}", f"?name={quote(filename)}")
+    # Upload PDF asset
+    upload_url = release["upload_url"].replace("{?name,label}", f"?name={filename}")
     with open(pdf_path, "rb") as f:
         upload_resp = requests.post(
             upload_url,
