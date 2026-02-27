@@ -36,3 +36,13 @@ jobs:
           name: lunch-pdf-${{ github.run_number }}
           path: exports/
           retention-days: 30
+
+      - name: Install Twilio
+        run: pip install twilio
+
+      - name: Send WhatsApp notifications
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
+        run: python3 src/send_whatsapp.py
