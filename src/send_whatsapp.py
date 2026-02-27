@@ -10,7 +10,7 @@ Required environment variables:
 
 import os
 import sys
-import subprocess
+import requests
 from pathlib import Path
 from datetime import datetime
 
@@ -20,11 +20,13 @@ TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
 
 def upload_pdf(pdf_path: str) -> str:
     """Upload PDF to 0x0.st (free anonymous host, ~90 day retention) and return the public URL."""
-    result = subprocess.run(
-        ["curl", "-s", "-F", f"file=@{pdf_path}", "https://0x0.st"],
-        capture_output=True, text=True, timeout=60
-    )
-    url = result.stdout.strip()
+    with open(pdf_path, "rb") as f:
+        response = requests.post(
+            "https://0x0.st",
+            files={"file": (Path(pdf_path).name, f, "application/pdf")},
+            timeout=60
+        )
+    url = response.text.strip()
     if not url.startswith("https://"):
         raise RuntimeError(f"Upload failed. Response: {url}")
     return url
