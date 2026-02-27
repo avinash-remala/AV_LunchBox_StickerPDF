@@ -19,12 +19,12 @@ TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
 
 
 def upload_pdf(pdf_path: str) -> str:
-    """Upload PDF to 0x0.st (free anonymous host, ~90 day retention) and return the public URL."""
+    """Upload PDF to catbox.moe (free permanent host) and return the public URL."""
     with open(pdf_path, "rb") as f:
         response = requests.post(
-            "https://0x0.st",
-            files={"file": (Path(pdf_path).name, f, "application/pdf")},
-            headers={"User-Agent": "Mozilla/5.0 (compatible; LunchBoxBot/1.0)"},
+            "https://catbox.moe/user/api.php",
+            data={"reqtype": "fileupload"},
+            files={"fileToUpload": (Path(pdf_path).name, f, "application/pdf")},
             timeout=60
         )
     url = response.text.strip()
