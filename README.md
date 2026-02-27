@@ -113,12 +113,55 @@ Rows with a blank `Date` cell are grouped under the last non-blank date above th
 
 ---
 
+## GitHub Actions — Automated WhatsApp Delivery
+
+The workflow (`.github/workflows/generate_pdf.yml`) runs automatically Mon–Fri and sends results via WhatsApp using Twilio.
+
+### Schedule
+
+| Time (CST/CDT) | What gets sent |
+|----------------|----------------|
+| **10:44 AM** | Summary text only |
+| **11:34 AM** | Summary text + PDF attachment |
+
+DST is handled automatically — the cron entries switch between CST (UTC−6) and CDT (UTC−5) by month.
+
+### Manual Trigger
+
+Go to **Actions → WhatsApp Message → Run workflow**.
+The "Include PDF attachment" checkbox is checked by default — always sends summary + PDF.
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `SPREADSHEET_ID` | Google Sheets spreadsheet ID |
+| `TWILIO_SID` | Twilio Account SID |
+| `TWILIO_TOKEN` | Twilio Auth Token |
+| `WHATSAPP_TO` | Recipient WhatsApp number (e.g. `+12345678900`) |
+
+### How it works
+
+1. Fetches today's orders from Google Sheets
+2. Generates the sticker PDF and summary
+3. Uploads the PDF as a GitHub Release asset (tag: `lunch-YYYY-MM-DD`)
+4. Sends the summary (+ PDF link/attachment when scheduled) via Twilio WhatsApp Sandbox
+
+> **Note:** The GitHub repository must be **public** for the PDF release asset URL to be accessible by Twilio.
+
+---
+
 ## Project Structure
 
 ```
 AV_LunchBox_StickerPDF/
+├── .github/
+│   └── workflows/
+│       └── generate_pdf.yml  # GitHub Actions — automated WhatsApp delivery
+│
 ├── src/
 │   ├── generate_pdf.py       # Main script — all logic lives here
+│   ├── send_whatsapp.py      # Uploads PDF and sends WhatsApp via Twilio
 │   ├── requirements.txt      # Python dependencies
 │   └── setup.sh              # Setup helper
 │
@@ -187,6 +230,9 @@ brew install libreoffice tesseract
 - Merged all `src/` scripts into a single `generate_pdf.py` — no extra files
 - Removed all dead/deprecated code and helper scripts
 - LibreOffice path resolution works reliably on macOS
+- GitHub Actions workflow with automated WhatsApp delivery via Twilio
+- DST-aware scheduling (CST/CDT auto-detected by month)
+- All times use CST/CDT — GitHub runner UTC is corrected automatically
 
 ---
 
