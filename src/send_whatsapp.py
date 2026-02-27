@@ -13,6 +13,7 @@ import sys
 import requests
 from pathlib import Path
 from datetime import datetime
+from urllib.parse import quote
 
 
 TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
@@ -58,8 +59,8 @@ def upload_pdf(pdf_path: str) -> str:
                 headers=headers, timeout=30
             )
 
-    # Upload PDF asset
-    upload_url = release["upload_url"].replace("{?name,label}", f"?name={filename}")
+    # Upload PDF asset (URL-encode filename to handle spaces)
+    upload_url = release["upload_url"].replace("{?name,label}", f"?name={quote(filename)}")
     with open(pdf_path, "rb") as f:
         upload_resp = requests.post(
             upload_url,
@@ -67,7 +68,11 @@ def upload_pdf(pdf_path: str) -> str:
             data=f,
             timeout=120,
         )
-    return upload_resp.json()["browser_download_url"]
+    upload_data = upload_resp.json()
+    if upload_resp.status_code not in (200, 201) or "browser_download_url" not in upload_data:
+        print(f"PDF upload failed (status {upload_resp.status_code}): {upload_data}")
+        raise RuntimeError(f"Failed to upload PDF asset: {upload_data.get('message', 'unknown error')}")
+    return upload_data["browser_download_url"]
 
 
 def send_message(client, to_number: str, body: str = None, media_url: str = None):
