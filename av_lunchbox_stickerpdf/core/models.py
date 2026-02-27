@@ -12,6 +12,8 @@ class BoxType(str, Enum):
     """Standard box types available."""
     VEG_COMFORT = "Veg Comfort Box"
     NON_VEG_COMFORT = "Non-Veg Comfort Box"
+    VEG_SPECIAL = "Veg Special Box"
+    NON_VEG_SPECIAL = "Non-Veg Special Box"
     KABULI_CHANA = "Kabuli Chana Box"
     MOONG_DAL = "Moong Dal Box"
     RAJMA = "Rajma Box"

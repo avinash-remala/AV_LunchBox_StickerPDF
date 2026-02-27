@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "av-lunchbox-stickerpdf"
+version = "2.1.0"
+description = "Generate lunch box order sticker PDFs and summaries from Google Sheets and images"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [
+    { name = "AV Team" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Office/Business",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "python-docx>=0.8.11",
+    "requests>=2.25.0",
+    "Pillow>=9.0.0",
+    "pytesseract>=0.3.10",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+pdf = [
+    "docx2pdf>=0.10",
+]
+
+[project.scripts]
+av-lunchbox = "av_lunchbox_stickerpdf.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["av_lunchbox_stickerpdf*"]
+exclude = ["tests*", "docs*", "src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["av_lunchbox_stickerpdf"]
+omit = ["tests/*", "src/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

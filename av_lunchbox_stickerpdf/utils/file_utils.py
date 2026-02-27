@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 
+from ..config.logging_config import get_logger
+
+log = get_logger("utils.file_utils")
+
 
 def clean_directory(directory: str) -> bool:
     """
@@ -22,23 +26,23 @@ def clean_directory(directory: str) -> bool:
         dir_path = Path(directory)
         
         if not dir_path.exists():
-            print(f"Directory does not exist: {directory}")
+            log.warning(f"Directory does not exist: {directory}")
             return False
         
         # Remove all contents
         for item in dir_path.iterdir():
             if item.is_dir():
                 shutil.rmtree(item)
-                print(f"  Removed directory: {item}")
+                log.debug(f"  Removed directory: {item}")
             else:
                 item.unlink()
-                print(f"  Removed file: {item}")
+                log.debug(f"  Removed file: {item}")
         
-        print(f"✓ Cleaned directory: {directory}")
+        log.info(f"✓ Cleaned directory: {directory}")
         return True
     
     except Exception as e:
-        print(f"✗ Error cleaning directory: {e}")
+        log.error(f"✗ Error cleaning directory: {e}")
         return False
 
 

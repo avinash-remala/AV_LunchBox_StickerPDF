@@ -14,14 +14,14 @@ Quick Start:
     cli.generate_from_image("order-image.png")
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "AV Team"
 __description__ = "Lunch Box Sticker PDF Generator"
 
 from . import core, data, report, cli, config, utils
 
 # Common imports
-from .core import Order, BoxType, RiceType, PDFGenerator
+from .core import Order, BoxType, RiceType, PDFGenerator, get_marker_for_box_rice
 from .data import GoogleSheetsClient, OrderExtractor, ImageOCRExtractor
 from .report import SummaryGenerator, SummaryWriter
 from .cli import CLI
@@ -32,6 +32,7 @@ __all__ = [
     'BoxType',
     'RiceType',
     'PDFGenerator',
+    'get_marker_for_box_rice',
     # Data
     'GoogleSheetsClient',
     'OrderExtractor',
