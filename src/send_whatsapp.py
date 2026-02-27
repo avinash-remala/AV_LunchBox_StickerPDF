@@ -19,10 +19,9 @@ TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
 
 
 def upload_pdf(pdf_path: str) -> str:
-    """Upload PDF to transfer.sh and return the public URL."""
-    filename = Path(pdf_path).name
+    """Upload PDF to 0x0.st (free anonymous host, ~90 day retention) and return the public URL."""
     result = subprocess.run(
-        ["curl", "-s", "--upload-file", pdf_path, f"https://transfer.sh/{filename}"],
+        ["curl", "-s", "-F", f"file=@{pdf_path}", "https://0x0.st"],
         capture_output=True, text=True, timeout=60
     )
     url = result.stdout.strip()
