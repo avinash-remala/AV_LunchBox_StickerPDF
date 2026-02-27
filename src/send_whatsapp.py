@@ -13,6 +13,9 @@ import sys
 import requests
 from pathlib import Path
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+CST = ZoneInfo("America/Chicago")
 
 
 TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
@@ -26,7 +29,7 @@ def upload_pdf(pdf_path: str) -> str:
     if not token or not repo:
         raise RuntimeError("GITHUB_TOKEN and GITHUB_REPOSITORY must be set")
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(CST).strftime("%Y-%m-%d")
     tag = f"lunch-{today}"
     filename = Path(pdf_path).name
     headers = {
@@ -98,7 +101,7 @@ def main():
         sys.exit(1)
 
     # Find today's export files
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(CST).strftime("%Y-%m-%d")
     export_dir = Path("exports") / today
 
     pdf_files = sorted(export_dir.glob("*.pdf"))

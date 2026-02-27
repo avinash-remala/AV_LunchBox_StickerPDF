@@ -17,6 +17,9 @@ from io import StringIO
 from copy import deepcopy
 from pathlib import Path
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+CST = ZoneInfo("America/Chicago")
 from collections import Counter
 
 import requests
@@ -62,7 +65,7 @@ def get_todays_lunch_orders(spreadsheet_id, sheet_id=0):
         print(f"Error fetching Google Sheet: {e}")
         return []
 
-    today = datetime.now()
+    today = datetime.now(CST)
     today_formats = [today.strftime("%m/%d/%Y"), f"{today.month}/{today.day}/{today.year}"]
 
     orders = []
@@ -344,7 +347,7 @@ def cleanup_old_exports(exports_dir="exports"):
     exports = Path(exports_dir)
     if not exports.exists():
         return
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(CST).strftime("%Y-%m-%d")
     for item in exports.iterdir():
         if item.is_dir() and item.name == today:
             continue
@@ -394,7 +397,7 @@ def main():
         print("No data found. Exiting.")
         sys.exit(1)
 
-    now = datetime.now()
+    now = datetime.now(CST)
     timestamp = now.strftime("%Y-%m-%d_%I-%M%p")
     output_dir = Path("exports") / now.strftime("%Y-%m-%d")
     output_dir.mkdir(parents=True, exist_ok=True)
