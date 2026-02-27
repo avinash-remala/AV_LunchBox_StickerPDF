@@ -395,7 +395,7 @@ def main():
         sys.exit(1)
 
     now = datetime.now()
-    timestamp = now.strftime("%Y-%m-%d_%I:%M %p")
+    timestamp = now.strftime("%Y-%m-%d_%I-%M %p")
     output_dir = Path("exports") / now.strftime("%Y-%m-%d")
     output_dir.mkdir(parents=True, exist_ok=True)
 
