@@ -53,7 +53,7 @@ jobs:
   # ── Step 2a: Send summary only (10:44 AM) ────────────────────────────────
   send-summary:
     needs: generate
-    if: |
+    if: >-
       github.event.schedule == '44 16 * * 1-5' ||
       github.event.schedule == '44 15 * * 1-5' ||
       github.event.schedule == '05 17 * * 1-5' ||
@@ -90,7 +90,7 @@ jobs:
   # ── Step 2b: Send summary + PDF (11:34 AM and manual) ────────────────────
   send-pdf:
     needs: generate
-    if: |
+    if: >-
       github.event.schedule == '34 17 * * 1-5' ||
       github.event.schedule == '34 16 * * 1-5' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.send_pdf != 'false')
