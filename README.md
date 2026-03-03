@@ -113,9 +113,9 @@ Rows with a blank `Date` cell are grouped under the last non-blank date above th
 
 ---
 
-## GitHub Actions — Automated WhatsApp Delivery
+## GitHub Actions — Automated Email Delivery
 
-The workflow (`.github/workflows/generate_pdf.yml`) runs automatically Mon–Fri and sends results via WhatsApp using Twilio.
+The workflow (`.github/workflows/generate_pdf.yml`) runs automatically Mon–Fri and sends results via Gmail.
 
 ### Schedule
 
@@ -136,18 +136,15 @@ The "Include PDF attachment" checkbox is checked by default — always sends sum
 | Secret | Description |
 |--------|-------------|
 | `SPREADSHEET_ID` | Google Sheets spreadsheet ID |
-| `TWILIO_SID` | Twilio Account SID |
-| `TWILIO_TOKEN` | Twilio Auth Token |
-| `WHATSAPP_TO` | Recipient WhatsApp numbers, comma-separated (e.g. `+12345678900,+19876543210`) |
+| `GMAIL_USER` | Gmail address to send from (e.g. `you@gmail.com`) |
+| `GMAIL_APP_PASSWORD` | Gmail App Password (16-char, from Google Account → Security → App passwords) |
+| `EMAIL_TO` | Recipient email addresses, comma-separated |
 
 ### How it works
 
 1. Fetches today's orders from Google Sheets
 2. Generates the sticker PDF and summary
-3. Uploads the PDF as a GitHub Release asset (tag: `lunch-YYYY-MM-DD`)
-4. Sends the summary (+ PDF link/attachment when scheduled) via Twilio WhatsApp Sandbox
-
-> **Note:** The GitHub repository must be **public** for the PDF release asset URL to be accessible by Twilio.
+3. Sends the summary via Gmail (+ PDF as email attachment at 11:34 AM)
 
 ---
 

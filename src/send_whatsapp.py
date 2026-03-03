@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 """
-Send today's lunch PDF and summary via WhatsApp using Twilio.
+Send today's lunch summary and PDF via Gmail.
 
 Required environment variables:
-    TWILIO_SID      - Twilio Account SID
-    TWILIO_TOKEN    - Twilio Auth Token
-    WHATSAPP_TO     - Recipient WhatsApp numbers, comma-separated (e.g. +12345678900,+19876543210)
+    GMAIL_USER          - Gmail address to send from
+    GMAIL_APP_PASSWORD  - Gmail App Password (not your regular password)
+    EMAIL_TO            - Recipient email addresses, comma-separated
 """
 
 import os
 import sys
-import requests
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -18,89 +22,39 @@ from zoneinfo import ZoneInfo
 CST = ZoneInfo("America/Chicago")
 
 
-TWILIO_SANDBOX_NUMBER = "+14155238886"  # Twilio WhatsApp Sandbox number
+def send_email(gmail_user: str, app_password: str, recipients: list, subject: str, body: str, pdf_path: str = None):
+    msg = MIMEMultipart()
+    msg["From"] = gmail_user
+    msg["To"] = ", ".join(recipients)
+    msg["Subject"] = subject
 
+    msg.attach(MIMEText(body, "plain"))
 
-def upload_pdf(pdf_path: str) -> str:
-    """Upload PDF as a GitHub Release asset and return the public download URL."""
-    token = os.environ.get("GITHUB_TOKEN")
-    repo = os.environ.get("GITHUB_REPOSITORY")  # e.g. avinash-remala/AV_LunchBox_StickerPDF
-
-    if not token or not repo:
-        raise RuntimeError("GITHUB_TOKEN and GITHUB_REPOSITORY must be set")
-
-    today = datetime.now(CST).strftime("%Y-%m-%d")
-    tag = f"lunch-{today}"
-    filename = Path(pdf_path).name
-    headers = {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-
-    # Get or create a release for today
-    release_resp = requests.get(
-        f"https://api.github.com/repos/{repo}/releases/tags/{tag}", headers=headers
-    )
-    if release_resp.status_code == 404:
-        release_resp = requests.post(
-            f"https://api.github.com/repos/{repo}/releases",
-            headers=headers,
-            json={"tag_name": tag, "name": f"Lunch Orders {today}", "draft": False, "prerelease": False},
-            timeout=30,
+    if pdf_path:
+        with open(pdf_path, "rb") as f:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(f.read())
+        encoders.encode_base64(part)
+        part.add_header(
+            "Content-Disposition",
+            f"attachment; filename={Path(pdf_path).name}",
         )
-    release = release_resp.json()
-    if "upload_url" not in release:
-        print(f"GitHub Release API error (status {release_resp.status_code}): {release}")
-        raise RuntimeError(f"Failed to get/create GitHub Release: {release.get('message', 'unknown error')}")
+        msg.attach(part)
 
-    # Delete existing asset with same name if any (re-run case)
-    for asset in release.get("assets", []):
-        if asset["name"] == filename:
-            requests.delete(
-                f"https://api.github.com/repos/{repo}/releases/assets/{asset['id']}",
-                headers=headers, timeout=30
-            )
-
-    # Upload PDF asset
-    upload_url = release["upload_url"].replace("{?name,label}", f"?name={filename}")
-    with open(pdf_path, "rb") as f:
-        upload_resp = requests.post(
-            upload_url,
-            headers={**headers, "Content-Type": "application/pdf"},
-            data=f,
-            timeout=120,
-        )
-    upload_data = upload_resp.json()
-    if upload_resp.status_code not in (200, 201) or "browser_download_url" not in upload_data:
-        print(f"PDF upload failed (status {upload_resp.status_code}): {upload_data}")
-        raise RuntimeError(f"Failed to upload PDF asset: {upload_data.get('message', 'unknown error')}")
-    return upload_data["browser_download_url"]
-
-
-def send_message(client, to_number: str, body: str = None, media_url: str = None):
-    """Send a WhatsApp message via Twilio."""
-    kwargs = {
-        "from_": f"whatsapp:{TWILIO_SANDBOX_NUMBER}",
-        "to": f"whatsapp:{to_number}",
-    }
-    if body:
-        kwargs["body"] = body
-    if media_url:
-        kwargs["media_url"] = [media_url]
-    return client.messages.create(**kwargs)
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(gmail_user, app_password)
+        server.sendmail(gmail_user, recipients, msg.as_string())
 
 
 def main():
-    # Load credentials from environment
-    account_sid = os.environ.get("TWILIO_SID")
-    auth_token = os.environ.get("TWILIO_TOKEN")
-    to_number = os.environ.get("WHATSAPP_TO")
+    gmail_user = os.environ.get("GMAIL_USER")
+    app_password = os.environ.get("GMAIL_APP_PASSWORD")
+    email_to = os.environ.get("EMAIL_TO")
 
-    if not all([account_sid, auth_token, to_number]):
-        print("✗ Missing required environment variables: TWILIO_SID, TWILIO_TOKEN, WHATSAPP_TO")
+    if not all([gmail_user, app_password, email_to]):
+        print("✗ Missing required environment variables: GMAIL_USER, GMAIL_APP_PASSWORD, EMAIL_TO")
         sys.exit(1)
 
-    # Find today's export files
     today = datetime.now(CST).strftime("%Y-%m-%d")
     export_dir = Path("exports") / today
 
@@ -111,37 +65,24 @@ def main():
         print(f"✗ No export files found in {export_dir}")
         sys.exit(1)
 
-    pdf_path = str(pdf_files[-1])   # Most recent
+    pdf_path = str(pdf_files[-1])
     summary_text = txt_files[-1].read_text()
 
     send_pdf = os.environ.get("SEND_PDF", "false").lower() == "true"
 
-    # Import Twilio (installed in workflow)
-    from twilio.rest import Client
-    client = Client(account_sid, auth_token)
+    recipients = [e.strip() for e in email_to.split(",") if e.strip()]
+    subject = f"Lunch Orders — {today}"
 
-    if send_pdf:
-        # Upload PDF and get public URL
-        print(f"Uploading PDF: {pdf_path}")
-        pdf_url = upload_pdf(pdf_path)
-        print(f"PDF URL: {pdf_url}")
-        message = f"{summary_text}\n\n📄 PDF: {pdf_url}"
-    else:
-        message = summary_text
-
-    # Send to all recipients (comma-separated numbers)
-    recipients = [n.strip() for n in to_number.split(",") if n.strip()]
-    print(f"Sending to {len(recipients)} recipient(s)...")
-
-    for number in recipients:
-        print(f"  → {number}")
-        msg = send_message(client, number, body=message)
-        print(f"     summary  SID={msg.sid} status={msg.status}")
-        if send_pdf:
-            msg2 = send_message(client, number, body="📎 Lunch PDF attached:", media_url=pdf_url)
-            print(f"     pdf      SID={msg2.sid} status={msg2.status}")
-
-    print("✓ Done")
+    print(f"Sending email to {len(recipients)} recipient(s)...")
+    send_email(
+        gmail_user,
+        app_password,
+        recipients,
+        subject,
+        summary_text,
+        pdf_path=pdf_path if send_pdf else None,
+    )
+    print(f"✓ Done {'(with PDF attachment)' if send_pdf else '(summary only)'}")
 
 
 if __name__ == "__main__":
