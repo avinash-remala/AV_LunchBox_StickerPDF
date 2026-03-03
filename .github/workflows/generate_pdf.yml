@@ -9,33 +9,8 @@ on:
         default: true   # Manual runs always send summary + PDF
 
   schedule:
-    # CST (UTC-6): Jan, Feb, Mar — summary only at 10:44 AM, summary+PDF at 11:34 AM
-    - cron: '44 16 * 1 1-5'
-    - cron: '34 17 * 1 1-5'
-    - cron: '44 16 * 2 1-5'
-    - cron: '34 17 * 2 1-5'
-    - cron: '44 16 * 3 1-5'
-    - cron: '34 17 * 3 1-5'
-    # CDT (UTC-5): Apr–Oct — summary only at 10:44 AM, summary+PDF at 11:34 AM
-    - cron: '44 15 * 4 1-5'
-    - cron: '34 16 * 4 1-5'
-    - cron: '44 15 * 5 1-5'
-    - cron: '34 16 * 5 1-5'
-    - cron: '44 15 * 6 1-5'
-    - cron: '34 16 * 6 1-5'
-    - cron: '44 15 * 7 1-5'
-    - cron: '34 16 * 7 1-5'
-    - cron: '44 15 * 8 1-5'
-    - cron: '34 16 * 8 1-5'
-    - cron: '44 15 * 9 1-5'
-    - cron: '34 16 * 9 1-5'
-    - cron: '44 15 * 10 1-5'
-    - cron: '34 16 * 10 1-5'
-    # CST (UTC-6): Nov, Dec
-    - cron: '44 16 * 11 1-5'
-    - cron: '34 17 * 11 1-5'
-    - cron: '44 16 * 12 1-5'
-    - cron: '34 17 * 12 1-5'
+    - cron: '44 16 * * 1-5'   # 10:44 AM CST (UTC-6), Mon–Fri — summary only
+    - cron: '34 17 * * 1-5'   # 11:34 AM CST (UTC-6), Mon–Fri — summary + PDF
 
 jobs:
   generate:
@@ -71,5 +46,5 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          SEND_PDF: ${{ contains('34 17 * 1 1-5,34 17 * 2 1-5,34 17 * 3 1-5,34 16 * 4 1-5,34 16 * 5 1-5,34 16 * 6 1-5,34 16 * 7 1-5,34 16 * 8 1-5,34 16 * 9 1-5,34 16 * 10 1-5,34 17 * 11 1-5,34 17 * 12 1-5', github.event.schedule) || github.event.inputs.send_pdf == 'true' }}
+          SEND_PDF: ${{ github.event.schedule == '34 17 * * 1-5' || github.event.inputs.send_pdf == 'true' }}
         run: python3 src/send_whatsapp.py
