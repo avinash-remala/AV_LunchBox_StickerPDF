@@ -135,9 +135,11 @@ def main():
 
     for number in recipients:
         print(f"  → {number}")
-        send_message(client, number, body=message)
+        msg = send_message(client, number, body=message)
+        print(f"     summary  SID={msg.sid} status={msg.status}")
         if send_pdf:
-            send_message(client, number, body="📎 Lunch PDF attached:", media_url=pdf_url)
+            msg2 = send_message(client, number, body="📎 Lunch PDF attached:", media_url=pdf_url)
+            print(f"     pdf      SID={msg2.sid} status={msg2.status}")
 
     print("✓ Done")
 
