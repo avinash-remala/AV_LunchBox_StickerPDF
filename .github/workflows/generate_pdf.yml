@@ -10,12 +10,13 @@ on:
 
   schedule:
     # ─── UPDATE MANUALLY TWICE A YEAR ───────────────────────────────────────
-    # CST (UTC−6): Nov 1 → Mar 7   →  use '44 16' and '34 17'
-    # CDT (UTC−5): Mar 8 → Oct 31  →  use '44 15' and '34 16'
-    # Next switch: Mar 8 2026 → change to CDT (44 15 / 34 16)
-    # Next switch: Nov 1 2026 → change back to CST (44 16 / 34 17)
+    # CST (UTC−6): Nov 1 → Mar 7   →  10:44→'44 16'  11:05→'05 17'  11:34→'34 17'
+    # CDT (UTC−5): Mar 8 → Oct 31  →  10:44→'44 15'  11:05→'05 16'  11:34→'34 16'
+    # Next switch: Mar 8 2026 → change to CDT (44 15 / 05 16 / 34 16)
+    # Next switch: Nov 1 2026 → change back to CST (44 16 / 05 17 / 34 17)
     # ────────────────────────────────────────────────────────────────────────
     - cron: '44 16 * * 1-5'   # 10:44 AM CST (UTC−6) — summary only
+    - cron: '05 17 * * 1-5'   # 11:05 AM CST (UTC−6) — summary only
     - cron: '34 17 * * 1-5'   # 11:34 AM CST (UTC−6) — summary + PDF
 
 jobs:
@@ -55,6 +56,8 @@ jobs:
     if: |
       github.event.schedule == '44 16 * * 1-5' ||
       github.event.schedule == '44 15 * * 1-5' ||
+      github.event.schedule == '05 17 * * 1-5' ||
+      github.event.schedule == '05 16 * * 1-5' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.send_pdf == 'false')
     runs-on: ubuntu-latest
 
