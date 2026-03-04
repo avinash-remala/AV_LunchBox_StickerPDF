@@ -55,7 +55,9 @@ def main():
         print("✗ Missing required environment variables: GMAIL_USER, GMAIL_APP_PASSWORD, EMAIL_TO")
         sys.exit(1)
 
-    today = datetime.now(CST).strftime("%Y-%m-%d")
+    now = datetime.now(CST)
+    today = now.strftime("%Y-%m-%d")
+    send_time = now.strftime("%m/%d %I:%M %p CST")
     export_dir = Path("exports") / today
 
     pdf_files = sorted(export_dir.glob("*.pdf"))
@@ -71,7 +73,7 @@ def main():
     send_pdf = os.environ.get("SEND_PDF", "false").lower() == "true"
 
     recipients = [e.strip() for e in email_to.split(",") if e.strip()]
-    subject = f"Lunch Orders — {today}"
+    subject = f"Lunch Orders — {send_time}"
 
     print(f"Sending email to {len(recipients)} recipient(s)...")
     send_email(
