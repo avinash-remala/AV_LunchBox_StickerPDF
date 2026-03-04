@@ -1,0 +1,76 @@
+name: Lunch Summary
+
+on:
+  workflow_dispatch:   # Manual trigger — sends summary only
+
+  schedule:
+    # ─── UPDATE MANUALLY TWICE A YEAR ───────────────────────────────────────
+    # CST (UTC−6): Nov 1 → Mar 7   →  10:44→'44 16'  11:05→'05 17'
+    # CDT (UTC−5): Mar 8 → Oct 31  →  10:44→'44 15'  11:05→'05 16'
+    # Next switch: Mar 8 2026 → change to CDT (44 15 / 05 16)
+    # Next switch: Nov 1 2026 → change back to CST (44 16 / 05 17)
+    # ────────────────────────────────────────────────────────────────────────
+    - cron: '44 16 * * 1-5'   # 10:44 AM CST (UTC−6)
+    - cron: '05 17 * * 1-5'   # 11:05 AM CST (UTC−6)
+
+jobs:
+
+  # ── Step 1: Generate PDF and upload as artifact ───────────────────────────
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y libreoffice
+
+      - name: Install Python dependencies
+        run: pip install -r src/requirements.txt
+
+      - name: Generate PDF and summary
+        run: python3 src/generate_pdf.py Templates/AR_Template.docx --google-sheet ${{ secrets.SPREADSHEET_ID }}
+
+      - name: Upload PDF and summary as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lunch-pdf-${{ github.run_number }}
+          path: exports/
+          retention-days: 30
+
+  # ── Step 2: Send summary only ─────────────────────────────────────────────
+  send-summary:
+    needs: generate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install -r src/requirements.txt
+
+      - name: Download exports artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lunch-pdf-${{ github.run_number }}
+          path: exports/
+
+      - name: Send summary email
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          SEND_PDF: 'false'
+        run: python3 src/send_whatsapp.py
