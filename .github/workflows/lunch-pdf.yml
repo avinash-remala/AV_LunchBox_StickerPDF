@@ -1,16 +1,7 @@
 name: Lunch Summary + PDF
 
 on:
-  workflow_dispatch:   # Manual trigger — sends summary + PDF
-
-  schedule:
-    # ─── UPDATE MANUALLY TWICE A YEAR ───────────────────────────────────────
-    # CST (UTC−6): Nov 1 → Mar 7   →  11:34→'34 17'
-    # CDT (UTC−5): Mar 8 → Oct 31  →  11:34→'34 16'
-    # Next switch: Mar 8 2026 → change to CDT (34 16)
-    # Next switch: Nov 1 2026 → change back to CST (34 17)
-    # ────────────────────────────────────────────────────────────────────────
-    - cron: '34 17 * * 1-5'   # 11:34 AM CST (UTC−6)
+  workflow_dispatch:   # Triggered by cron-job.org or manually
 
 jobs:
 
