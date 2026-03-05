@@ -64,3 +64,4 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           SEND_PDF: 'true'
         run: python3 src/send_whatsapp.py
+
