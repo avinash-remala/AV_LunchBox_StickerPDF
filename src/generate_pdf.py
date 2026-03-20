@@ -68,10 +68,24 @@ def get_todays_lunch_orders(spreadsheet_id, sheet_id=0):
     today = datetime.now(CST)
     today_formats = [today.strftime("%m/%d/%Y"), f"{today.month}/{today.day}/{today.year}"]
 
+    # Find the date column key (handles whitespace-only or renamed headers)
+    date_col = 'Date'
+    if rows:
+        for key in rows[0].keys():
+            if key.strip() == 'Date':
+                date_col = key
+                break
+        else:
+            # Fall back to first column if no 'Date' header found
+            first_key = next(iter(rows[0].keys()), None)
+            if first_key is not None:
+                date_col = first_key
+                print(f"Warning: 'Date' column not found, using first column: {repr(date_col)}")
+
     orders = []
     found_today = False
     for row in rows:
-        date_val = row.get('Date', '').strip()
+        date_val = row.get(date_col, '').strip()
         if date_val in today_formats:
             found_today = True
         elif found_today and date_val != '':
