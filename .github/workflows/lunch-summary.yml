@@ -59,9 +59,9 @@ jobs:
 
       - name: Send summary email
         env:
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           SEND_PDF: 'false'
-        run: python3 src/send_whatsapp.py
+        run: python3 src/send_lunch_email.py
 

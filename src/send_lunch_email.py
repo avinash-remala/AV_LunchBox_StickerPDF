@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Send today's lunch summary and PDF via Gmail.
+Send today's lunch summary and PDF via Zoho Mail.
 
 Required environment variables:
-    GMAIL_USER          - Gmail address to send from
-    GMAIL_APP_PASSWORD  - Gmail App Password (not your regular password)
-    EMAIL_TO            - Recipient email addresses, comma-separated
+    EMAIL_USERNAME      - Zoho Mail address to send from
+    EMAIL_PASSWORD  - Zoho Mail password (or app-specific password)
+    EMAIL_TO        - Recipient email addresses, comma-separated
 """
 
 import os
@@ -22,9 +22,9 @@ from zoneinfo import ZoneInfo
 CST = ZoneInfo("America/Chicago")
 
 
-def send_email(gmail_user: str, app_password: str, recipients: list, subject: str, body: str, pdf_path: str = None):
+def send_email(email_user: str, email_password: str, recipients: list, subject: str, body: str, pdf_path: str = None):
     msg = MIMEMultipart()
-    msg["From"] = gmail_user
+    msg["From"] = email_user
     msg["To"] = ", ".join(recipients)
     msg["Subject"] = subject
 
@@ -41,18 +41,18 @@ def send_email(gmail_user: str, app_password: str, recipients: list, subject: st
         )
         msg.attach(part)
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(gmail_user, app_password)
-        server.sendmail(gmail_user, recipients, msg.as_string())
+    with smtplib.SMTP_SSL("smtp.zoho.com", 465) as server:
+        server.login(email_user, email_password)
+        server.sendmail(email_user, recipients, msg.as_string())
 
 
 def main():
-    gmail_user = os.environ.get("GMAIL_USER")
-    app_password = os.environ.get("GMAIL_APP_PASSWORD")
+    email_user = os.environ.get("EMAIL_USERNAME")
+    email_password = os.environ.get("EMAIL_PASSWORD")
     email_to = os.environ.get("EMAIL_TO")
 
-    if not all([gmail_user, app_password, email_to]):
-        print("✗ Missing required environment variables: GMAIL_USER, GMAIL_APP_PASSWORD, EMAIL_TO")
+    if not all([email_user, email_password, email_to]):
+        print("✗ Missing required environment variables: EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_TO")
         sys.exit(1)
 
     now = datetime.now(CST)
@@ -77,8 +77,8 @@ def main():
 
     print(f"Sending email to {len(recipients)} recipient(s)...")
     send_email(
-        gmail_user,
-        app_password,
+        email_user,
+        email_password,
         recipients,
         subject,
         summary_text,

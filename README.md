@@ -115,36 +115,33 @@ Rows with a blank `Date` cell are grouped under the last non-blank date above th
 
 ## GitHub Actions — Automated Email Delivery
 
-The workflow (`.github/workflows/generate_pdf.yml`) runs automatically Mon–Fri and sends results via Gmail.
+Two workflows run automatically (triggered by cron-job.org) Mon–Fri and send results via Zoho Mail.
 
-### Schedule
+### Workflows
 
-| Time (CST/CDT) | What gets sent |
-|----------------|----------------|
-| **10:44 AM** | Summary text only |
-| **11:34 AM** | Summary text + PDF attachment |
-
-DST is handled automatically — the cron entries switch between CST (UTC−6) and CDT (UTC−5) by month.
+| Workflow file | What gets sent |
+|---------------|----------------|
+| `lunch-summary.yml` | Summary text only |
+| `lunch-pdf.yml` | Summary text + PDF attachment |
 
 ### Manual Trigger
 
-Go to **Actions → WhatsApp Message → Run workflow**.
-The "Include PDF attachment" checkbox is checked by default — always sends summary + PDF.
+Go to **Actions → Lunch Summary** or **Lunch Summary + PDF → Run workflow**.
 
 ### Required GitHub Secrets
 
 | Secret | Description |
 |--------|-------------|
 | `SPREADSHEET_ID` | Google Sheets spreadsheet ID |
-| `GMAIL_USER` | Gmail address to send from (e.g. `you@gmail.com`) |
-| `GMAIL_APP_PASSWORD` | Gmail App Password (16-char, from Google Account → Security → App passwords) |
+| `EMAIL_USERNAME` | Zoho Mail address to send from |
+| `EMAIL_PASSWORD` | Zoho Mail password (or app-specific password if 2FA is enabled) |
 | `EMAIL_TO` | Recipient email addresses, comma-separated |
 
 ### How it works
 
 1. Fetches today's orders from Google Sheets
 2. Generates the sticker PDF and summary
-3. Sends the summary via Gmail (+ PDF as email attachment at 11:34 AM)
+3. Sends the summary via Zoho Mail (+ PDF as email attachment in `lunch-pdf.yml`)
 
 ---
 
@@ -154,13 +151,14 @@ The "Include PDF attachment" checkbox is checked by default — always sends sum
 AV_LunchBox_StickerPDF/
 ├── .github/
 │   └── workflows/
-│       └── generate_pdf.yml  # GitHub Actions — automated WhatsApp delivery
+│       ├── lunch-summary.yml  # GitHub Actions — sends summary email only
+│       └── lunch-pdf.yml      # GitHub Actions — sends summary + PDF email
 │
 ├── src/
-│   ├── generate_pdf.py       # Main script — all logic lives here
-│   ├── send_whatsapp.py      # Uploads PDF and sends WhatsApp via Twilio
-│   ├── requirements.txt      # Python dependencies
-│   └── setup.sh              # Setup helper
+│   ├── generate_pdf.py        # Main script — all logic lives here
+│   ├── send_lunch_email.py    # Sends summary/PDF via Zoho Mail
+│   ├── requirements.txt       # Python dependencies
+│   └── setup.sh               # Setup helper
 │
 ├── templates/
 │   └── AR_Template.docx      # Word template (3-column sticker layout)
@@ -227,8 +225,8 @@ brew install libreoffice tesseract
 - Merged all `src/` scripts into a single `generate_pdf.py` — no extra files
 - Removed all dead/deprecated code and helper scripts
 - LibreOffice path resolution works reliably on macOS
-- GitHub Actions workflow with automated WhatsApp delivery via Twilio
-- DST-aware scheduling (CST/CDT auto-detected by month)
+- GitHub Actions workflow with automated email delivery via Zoho Mail
+- Split into two independent workflows: summary-only and summary + PDF
 - All times use CST/CDT — GitHub runner UTC is corrected automatically
 
 ---
