@@ -140,6 +140,17 @@ def save_summary(orders, output_dir, filename):
         for address in sorted(addr_counts):
             count = addr_counts[address]
             lines.append(f"•\t{address}: {count} {'box' if count == 1 else 'boxes'}")
+
+        custom_orders = [o for o in orders if o.get('comments', '').strip()]
+        if custom_orders:
+            lines.append("\nCustomizations:")
+            for o in custom_orders:
+                lines.append(f"Name: {o.get('name', '')}")
+                lines.append(f"Type of food: {o.get('box_type', '')}")
+                lines.append(f"Type of rice: {o.get('rice_type', '')}")
+                lines.append(f"Comment: {o.get('comments', '')}")
+                lines.append("")
+
         content = "\n".join(lines)
 
     path = Path(output_dir) / filename
