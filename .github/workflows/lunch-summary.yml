@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libreoffice
+        run: sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libreoffice
 
       - name: Install Python dependencies
         run: pip install -r src/requirements.txt
