@@ -145,9 +145,7 @@ def save_summary(orders, output_dir, filename):
         if custom_orders:
             lines.append("\nCustomizations:")
             for o in custom_orders:
-                lines.append(f"Name: {o.get('name', '')}")
-                lines.append(f"Type of food: {o.get('box_type', '')}")
-                lines.append(f"Type of rice: {o.get('rice_type', '')}")
+                lines.append(f"{o.get('name', '')} - {o.get('box_type', '')} - {o.get('rice_type', '')}")
                 lines.append(f"Comment: {o.get('comments', '')}")
                 lines.append("")
 
