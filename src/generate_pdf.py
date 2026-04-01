@@ -143,7 +143,7 @@ def save_summary(orders, output_dir, filename):
 
         custom_orders = [o for o in orders if o.get('comments', '').strip()]
         if custom_orders:
-            lines.append("\nCustomizations:")
+            lines.append(f"\nCustomizations ({len(custom_orders)}):")
             for o in custom_orders:
                 lines.append(f"{o.get('name', '')} - {o.get('box_type', '')} - {o.get('rice_type', '')}")
                 lines.append(f"Comment: {o.get('comments', '')}")
@@ -424,6 +424,9 @@ def main():
     timestamp = now.strftime("%Y-%m-%d_%I-%M%p")
     output_dir = Path("exports") / now.strftime("%Y-%m-%d")
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    marker_order = {"--- VW ---": 0, "--- VP ---": 1, "--- NVW ---": 2, "--- NVP ---": 3, "--- VSP ---": 4, "--- NVSP ---": 5}
+    data_rows.sort(key=lambda o: marker_order.get(get_marker(o.get('box_type', ''), o.get('rice_type', ''))[0], 99))
 
     cleanup_old_exports("exports")
     generate_pdf(template_path, str(output_dir / f"{timestamp}.pdf"), data_rows)
